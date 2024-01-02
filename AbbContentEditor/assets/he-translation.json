@@ -1,0 +1,147 @@
+{
+    "morelink": "Read more",
+    "fullname": "אלטס'' בל''ב",
+    "menu": {
+        "position": "Fullstack developer",
+        "resume": "קורות חיים",
+        "contacts": "טֵלֵפוֹן",
+        "sitemap": "מפת אתר",
+        "home": "בית",
+        "experience": "ניסיון",
+        "skills": "כישורים",
+        "blogs": "בלוגים",
+        "about": "עליי",
+        "education" : "חינוך"
+    },
+    "skills": {
+      "title": "כישורים",
+      "content": [
+        {
+          "name": "Asp.Net, C#: MVC applications, WebForms, Console applications",
+          "description": "The development of the small tools, the parts of microservices and the monolith applications for Net Framework and Net Core, the usage of the extensions EntityFramework, Dapper, Nlog, NewtonSoft, OpenXML and many others. "
+        },
+        {
+          "name": "JavaScript and libraries (React and connected libraries, jQuery, NodeJS)",
+          "description": "The front-end development with popular JS frameworks and libraries - React, Redux, Antd, Axios, Bootstrap, jQuery (mostly for old projects). I use webpack to bundle JavaScript and TypeScript applications."
+        },
+        {
+          "name": "XHTML, CSS, XML: deep knowledge of formats and technologies",
+          "description": "The modern usage of CSS and SCSS for styles, use webpack to automize the CSS compilation."
+        },
+        {
+          "name": "Microsoft SharePoint: development webparts, timer-jobs integration with external applications",
+          "description": "The full cycle of work with MS SharePoint (2010, 2019) - the creating a farm, the development of webparts, timerjobs and console applications for the export-import of data, integrations with external applications, Office online."
+        },
+        {
+          "name": "Devops engineer",
+          "description": "Setting up the CI/CD processes with Gitlab, the automation of the creating environments with Terraform (AWS, YandexCloud) and Vagrant (VirtualBox). "
+        }
+      ]
+    },
+    "main": {
+        "greeting" : "שלום! ",
+        "beforename":"אני ",
+        "name":"אלטס'' בל''ב",
+        "position":"Fullstack developer (C#, JS, React, (no)SQL)",
+        "titleAbout" : "עליי",
+        "description" :"מפתח תוכנה בעל ניסיון רב ביצירה והטעמה של מערכות IT.",
+        "image":"/public/img/banner/abb.jpg",
+        "bio":"I am looking for a job in the Center of Israel - Tel-Aviv, Rehovot",
+        "email": "beliaeff@gmail.com",
+        "phone": "+49 157 38936214",
+      "address": "Mülhein, Germany, 45478",
+      "about" : "אולי בעוד שנה אוכל לכתוב בעברית, אבל עדיף לקרוא את זה באנגלית עכשיו.",      "website": "https://alexey.beliaeff.ru/",
+      "resumedownload": "/public/Aleksei_Beliaev_CV_2022-09.pdf",
+      "social": [
+        {
+          "name": "facebook",
+          "url": "https://www.facebook.com/alexeybeliaeff/",
+          "className": "fa fa-facebook"
+        },
+        {
+          "name": "github",
+          "url": "https://github.com/alexbbell",
+          "className": "fa fa-github"
+        },
+        {
+          "name": "linkedin",
+          "url": "https://www.linkedin.com/in/aleksei-beliaev/",
+          "className": "fa fa-linkedin"
+        },
+        {
+          "name": "instagram",
+          "url": "https://www.instagram.com/alexeybeliaeff/",
+          "className": "fa fa-instagram"
+        },
+        {
+          "name": "skype",
+          "url": "https://join.skype.com/invite/gLM7w30Ao8Vj",
+          "className": "fa fa-skype"
+        }
+      ]
+    },
+    "work": {
+      "title": "עבודה",
+      "content": [
+        {
+            "company":"GPB, financial company",
+            "title":"מהנדס תוכנה בכיר",
+            "years":"סֶפּטֶמבֶּר 2015 - ",
+            "description":"השלמתי בהצלחה את ההעברה מ-SharePoint 2010 ל-SharePoint 2019 - יותר מ-25 אלף משתמשים פעילים, מסדי נתונים של ~1Tb של תוכן. ערכתי ניתוח מהותי של המערכת הקיימת, התשתית, האפליקציות והשילוב עם מערכות חיצוניות. יצרתי תוכנית מיגרציה ולאחר מכן ניהלתי את התהליך, כמו כן פיתחתי והטמעתי כלים להעברת נתונים ישירה מ-SharePoint 2010 עד 2019. הובלתי בהצלחה צוות קטן של מפתחים."
+          },
+          {
+            "company":"GPB, financial company",
+            "title":"מפתח תוכנת SharePoint ערימה מלאה",
+            "years":"יולי 2010 - ספטמבר 2015",
+            "description":"תמיכה מלאה במערכת המבוססת על Microsoft SharePoint. שיתף פעולה עם קבלנים כדי להציע ולאחר מכן לפתח ולהטמיע פתרונות שונים. שילבו תכונות שונות ומפרטים טכניים של יישומים, פונקציונליות רציפה של מערכת הפורטל, פיתחו פתרונות SharePoint לצרכים פנימיים. אפליקציות שפותחו (Asp.net, C#, MSSQL, SharePoint) עם נתונים ממספר מסדי נתונים, AD, חילופים סינכרוניים וא-סינכרוניים בין מקורות נתונים שונים."
+          },
+          {
+            "company":"GPB, financial company",
+            "title":"מפתח תוכנה זוטר",
+            "years":"יולי 2008 - יולי 2010",
+            "description":"פיתוח אפליקציות ופונקציות פשוטות לצרכים פנימיים של החברה - סקרים, גלריית תמונות, הכנת דפי פרומו. בקשות SQL פשוטות ושימוש ביישומי אינטרנט"
+          }
+      ]
+    },
+    "education": {
+      "title": "Education",
+      "content": [
+        {
+          "school": "SkillBox",
+          "degree": "DevOps engineer. Basics",
+          "graduated": "March 2023",
+          "description": "The creating of CI/CD processes, the planning infrastructure, monitoring with Gitlab, Terraform, Docker, Prometheus, Grafana and Loki "
+        },
+        {
+          "school": "OTUS",
+          "degree": "C# Developer. Professional",
+          "graduated": "November 2022",
+          "description": "Advanced C# development with SQL & NoSQL, REST,  SOLID, Reflection, Delegates, Async operations "
+        },
+        {
+          "school": "Specialist",
+          "degree": "Javascript: React & JSX",
+          "graduated": "May 2019",
+          "description": "The React development"
+        },
+        {
+          "school": "Microsoft",
+          "degree": "SharePoint 2016: Development",
+          "graduated": "February 2018",
+          "description": "SharePoint 2016 development - webparts, timer jobs, modern wepbarts"
+        },
+        {
+          "school": "Microsoft",
+          "degree": "SharePoint 2016: Administration",
+          "graduated": "May 2017",
+          "description": "Set up SharePoint farm and make it work"
+        },
+        {
+          "school": "Moscow Institute of Radio Equipment, Electronics and Automation",
+          "degree": "master’s Degree in Radio engineering",
+          "graduated": "April 2004",
+          "description": "The development of radio engineering and communication environments"
+        }
+      ]
+    }
+  }

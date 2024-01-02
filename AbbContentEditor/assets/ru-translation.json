@@ -1,0 +1,154 @@
+{
+    "morelink": "Read more",
+    "fullname": "Aleksei Beliaev",
+    "menu": {
+      "position": "Fullstack developer",
+      "resume": "Резюме",
+      "contacts": "Контакты",
+      "sitemap": "Карта саайта",
+      "home": "Домой",
+      "experience": "Опыт",
+      "skills": "Навыки",
+      "blogs": "Блоги",
+      "about": "Обо мне",
+      "education": "Образование"
+    },
+    "skills": {
+      "title": "Навыки",
+      "content": [
+        {
+          "name":"Разработка приложений на языке C#:  Net.Framework 3.5, 4.5, .Net Core 3, 5, 6. Типы приложений - WebForms, WebAPI, Console applications",
+          "description" : "Разработка утилит, модулей микросервисной архитектуры и блоков монолитных решений для фреймворков Net Framework and Net Core с использованием EntityFramework, Dapper, Nlog, NewtonSoft, OpenXM и многих других."
+        },
+        {
+          "name":"JavaScript. Разработка интерфейсов и SPA с библиотеками  React, jQuery; бэк-энд на NodeJS",
+          "description" : "Разработка клиентских интерфейсов на Javascript с использованием библиотек React, Redux, Antd, Axios, Bootstrap, jQuery. Использую Webpack для сборки решений"
+        },
+        {
+          "name":"XHTML, CSS, XML: без этого никуда, но много что отдал на откуп фреймворкам типа MUI, Bootstrap, ANTD",
+          "description" : "Современные подходы к созданию стилей с классическим CSS и SCSS,  использование Webpack для компиляции в CSS."
+        },
+        {
+          "name":"Microsoft SharePoint",
+          "description":"Полный цикл работы с SharePoint (2010, 2019) -развертывание фермы серверов, разработка веб-частей, таймер-джобов и консольных приложений для импорта-экспорта данных, интеграции со сторонними базами и сервисами"
+        },
+        {
+          "name": "Devops",
+          "description": "Настройка процессов непрерывных интеграции и деплоя CI / CD с помощью Gitlab, планирование и развертывание инфраструктуры с помощью Terraform (AWS, YandexCloud) и Vagrant (VirtualBox)."
+        }
+      ]
+    },
+    "main": {
+      "greeting" : "Привет! ",
+      "beforename":"Меня зовут ",
+      "name":"Алексей Беляев",
+      "position":"Full-stack разработчик (TypeScript, JavaScript, React, C#, NodeJS (no)SQL)",
+      "titleAbout" : "Обо мне",
+      "description" :"Работаю разработчик ПО более 15 лет. Имею большой опыт разработки и внедрения ИТ систем. Основной стек - C# (Net), Javascript (React), SQL, REST. Более 10 лет работаю с  Microsoft SharePoint, в том числе разработал ряд приложений для SharePoint, интегрированных со сторонними базами данных (SQL и NoSQL) и веб-сервисами.",
+      "image":"/public/img/banner/abb.jpg",
+      "bio":"Full-stack developer",
+      "email": "beliaeff@gmail.com",
+      "phone": "+972 585362546",
+      "address": "Rehovot, 20293",
+      "about": "Работаю разработчиком ПО более 15 лет. Имею большой опыт разработки и внедрения ИТ систем. Основной стек - C# (Net), Javascript (React), SQL, REST. Более 10 лет работаю с  Microsoft SharePoint, в том числе разработал ряд приложений для SharePoint, интегрированных со сторонними базами данных (SQL и NoSQL) и веб-сервисами.\n Программированием я начал заниматься еще в школе и уже тогда понял, что это станет моей профессии. Параллельно с обучением в институте я начал изучать программирование и свою первую работу – в информационном агентстве РБК – нашел еще до вручения диплома. С тех пор разработка занимает очень важное место в моей жизни – я постоянно обучаюсь новому, добавляю новые навыки, прохожу новые курсы и слежу за изменениями в индустрии.\nЯ почти 20 лет счастливо женат, у нас растут трое отличных детей. Старший – талантливый математик и программист, один из самых сильных школьников Москвы в этих предметах, регулярно занимает призовые места на различных олимпиадах. Дочка – очень творческая личность, которая помимо школы достигла больших успехов в танцах, рисовании, дизайне и прочих творческих областях. Младшему всему три и он просто любимец всей семьи.\nКроме семьи и работы, значительное место в моей жизни занимает спорт (я увлекаюсь бегом и уже пробежал несколько полноценных марафонов), музыка и садоводство. Я люблю путешествовать и общаться с новыми людьми, легко нахожу с ними общий язык, без труда меняю обстановку и с удовольствием открываюсь новому.",
+      "website": "https://alexey.beliaeff.ru/",
+      "resumedownload": "/public/Aleksei_Beliaev_CV_2022-09.pdf",
+      "social": [
+        {
+          "name": "facebook",
+          "url": "https://www.facebook.com/alexeybeliaeff/",
+          "className": "fa fa-facebook"
+        },
+        {
+          "name": "github",
+          "url": "https://github.com/alexbbell",
+          "className": "fa fa-github"
+        },
+        {
+          "name": "linkedin",
+          "url": "https://www.linkedin.com/in/aleksei-beliaev/",
+          "className": "fa fa-linkedin"
+        },
+        {
+          "name": "instagram",
+          "url": "https://www.instagram.com/alexeybeliaeff/",
+          "className": "fa fa-instagram"
+        },
+        {
+          "name": "skype",
+          "url": "https://join.skype.com/invite/gLM7w30Ao8Vj",
+          "className": "fa fa-skype"
+        }
+      ]
+    },
+    "work": {
+      "title": "Работа",
+      "content": [
+        {
+          "company":"Банк ГПБ (АО)",
+          "title":"Главный разработчик",
+          "years":"Сентябрь 2015 - по н.в.",
+          "description":"Успешно выполнил миграцию портала на платформе SharePoint 2010 в SharePoint 2019: более 25 тысяч пользователей, ~1Tb баз данных содержимого. Провел детальный анализ существующей системы и ее инфраструктуры, приложений и интеграций, разработал план миграции и руководил процессом миграции, в том числе и разрабатывал утилиты для переноса данных из SharePoint 2010 в 2019 \"напрямую\". Успешно руководил небольшой командой разработчиков."
+        },
+        {
+          "company":"Банк ГПБ (АО)",
+          "title":"Full-stack разработчик для  SharePoint",
+          "years":"Июль  2010 - Сентябрь 2015",
+          "description":"Разработка приложений на стеке Asp.net, C#, MSSQL, SharePoint с обработкой данных из различных баз данных, Active Directory, синхронный и асинхронный обмен данными  между различным поставщиками данных."
+        },
+        {
+          "company":"Банк ГПБ (АО)",
+          "title":"Младший разработчик",
+          "years":"Июнь 2008 - Июль 2010",
+          "description":"Разработка простых приложений и модулей для внутренних задач компании - опросы, фотогалереи, создание промо-страниц и лендингов. Разработка простых SQL запросов и их применение в веб-приложениях "
+        }
+      ]
+    },
+    "education": {
+      "title": "Образование",
+      "content": [
+        {
+          "school":"SkillBox",
+          "degree":"DevOps engineer. Основы",
+          "graduated":"March 2023",
+          "description":"Создание  CI/CD процессов, планирование инфраструктуры и автоматическое развертывание, мониторинг. Утилиты Gitlab, Terraform, Docker, Prometheus, Grafana и Loki "
+        },
+
+        {
+          "school":"OTUS",
+          "degree":"C# Developer. Professional",
+          "graduated":"November 2022",
+          "description":"Продвинутый курс разработки на C# - SQL & NoSQL, REST,  SOLID, Reflection, Delegates, Async operations "
+        },
+
+        {
+          "school":"Specialist",
+          "degree":"Javascript: React и JSX",
+          "graduated":"May 2019",
+          "description":"Разработка на Javascript с использованием библиотеки React"
+          
+        },
+
+        {
+          "school":"Microsoft",
+          "degree":"SharePoint 2016: Development",
+          "graduated":"February 2018",
+          "description":"Разработка для SharePoint 2016  - webparts, timer jobs, modern wepbarts"
+          
+        },
+        {
+          "school":"Microsoft",
+          "degree":"SharePoint 2016: Administration",
+          "graduated":"May 2017",
+          "description":"Настройка фермы SharePoint и поддержка ее работы"
+          
+        },
+        {
+          "school":"Московский институт радиотехники, электроники и автоматики (Технический университет)",
+          "degree":"Специальность - Радиотехника",
+          "graduated":"Апрель 2004",
+          "description":"Разработка и использование систем связи"
+        }
+      ]
+    }
+  }
