@@ -1,14 +1,21 @@
-using AbbContentEditor;
+﻿using AbbContentEditor;
+using AbbContentEditor.Data;
+using AbbContentEditor.Helpers;
 using AbbContentEditor.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using NLog;
 using NLog.Web;
+using System.Text;
+using AbbContentEditor.Controllers;
+using AbbContentEditor.Data.Repositories;
 
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("init main");
+
+
 
 try
 {
@@ -23,30 +30,38 @@ try
     
     // NLog: Setup NLog for Dependency injection
     builder.Logging.ClearProviders();
+    builder.Logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
     builder.Host.UseNLog();
 
-    builder.Services.AddSingleton<AbbFileRepository>();
+    //builder.Services.AddSingleton<AbbFileRepository>();
     builder.Services.AddScoped<AbbFileRepository>();
 
     IHostEnvironment env = builder.Environment;
-    builder.Configuration
-        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
+    //var conf = builder.Configuration
+    //    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    //    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
 
 
     var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-    //string allowedHosts = builder.Configuration.GetSection("AllowedHosts").Value.ToString();
+    // string allowedHosts = builder.Configuration.GetSection("AllowedHosts").Value.ToString();
     //string[] allowedHosts = builder.Configuration.GetSection("AllowedHosts").Value.ToString().Split(";");
 
-    string allowedHosts = (env.IsDevelopment()) ? "https://localhost:3000" : "https://alexey.beliaeff.ru";
+    Console.WriteLine(env.IsDevelopment());
+    //
+    string allowedHosts = (env.IsDevelopment()) ? "http://localhost:3000, http://localhost:3001" : "https://alexey.beliaeff.ru";
+
     builder.Services.AddCors(options =>
     {
         options.AddPolicy(name: MyAllowSpecificOrigins,
             policy =>
             {
-                policy.WithOrigins(allowedHosts)
-                .AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+                policy
+                .WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:5000", "https://localhost:5001")
+
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
             });
     });
 
@@ -57,15 +72,56 @@ try
     var audience = builder.Configuration.GetSection("JWTSettings:Audience").Value;
     var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
+    builder.Services.Configure<IdentityOptions >(options =>
+    {
+        options.Password.RequireDigit = true;
+        // Lockout settings.
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.AllowedForNewUsers = true;
 
+        // User settings.
+        options.User.AllowedUserNameCharacters =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+        options.User.RequireUniqueEmail = false;
+
+    });
+
+    //builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+    builder.Services.AddAutoMapper(typeof(Program).Assembly);
+    builder.Services.AddTransient<IConfiguration>( sp =>
+    {
+        IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+        // configurationBuilder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+        configurationBuilder.AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
+        return configurationBuilder.Build();
+    });
 
     Console.WriteLine(DateTime.Now);
+    builder.Services.AddTransient<AbbAppContext>().
+            AddTransient<ITokenManager, TokenManager>();
+
+    builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+    builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+    {
+        options.User.RequireUniqueEmail = false;
+        options.SignIn.RequireConfirmedAccount = false; // for test only!
+        options.SignIn.RequireConfirmedEmail = false;
+        options.SignIn.RequireConfirmedPhoneNumber = false;
+        
+        
+    })
+    .AddEntityFrameworkStores<AbbAppContext>()
+    .AddDefaultTokenProviders();
+
 
     builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+
     })
     .AddJwtBearer(options =>
     {
@@ -81,11 +137,14 @@ try
         };
     });
 
-
+    
 
     var app = builder.Build();
-
     app.UseCors(MyAllowSpecificOrigins);
+    app.UseRouting();
+
+    Console.WriteLine("Dev or not");
+    Console.WriteLine(app.Environment.IsDevelopment());
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
@@ -94,13 +153,14 @@ try
     }
 
     app.UseHttpsRedirection();
-    
     app.UseAuthentication();
-
-
     app.UseAuthorization();
 
     app.MapControllers();
+
+    var context = app.Services.GetService<AbbAppContext>();
+    CreateDefaultData createDefaultData = new CreateDefaultData(context);
+
 
     app.Run();
 }
@@ -112,6 +172,7 @@ catch (Exception exception)
 }
 finally
 {
+
     // Ensure to flush and stop internal timers/threads before application-exit (Avoid segmentation fault on Linux)
     NLog.LogManager.Shutdown();
 }

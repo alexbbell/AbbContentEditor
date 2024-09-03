@@ -2,7 +2,8 @@
 
 namespace AbbContentEditor.Models
 {
-    public class User
+    // I don't really need if I use this model later
+    public class CustomUser
     {
         [Key]
         public Guid Id { get; set; }
@@ -11,7 +12,7 @@ namespace AbbContentEditor.Models
         public string? Email { get; set; }
         public string? Phone { get; set; }
         public Boolean? IsEmailConfirmed { get; set; }
-        public DateTime? RegDate { get; set; }
+        public DateTime RegDate { get; set; }
         public Roles? Role { get; set; }
 
     }
