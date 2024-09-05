@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AbbContentEditor.Migrations
 {
     [DbContext(typeof(AbbAppContext))]
-    [Migration("20240825070641_2blogcat")]
-    partial class _2blogcat
+    [Migration("20240903150357_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -77,7 +77,7 @@ namespace AbbContentEditor.Migrations
                             Preview = "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…",
                             TheText = "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.",
                             Title = "My first blog post from dbcontext migration",
-                            UpdDate = new DateTime(2024, 8, 25, 7, 6, 40, 765, DateTimeKind.Utc).AddTicks(4303)
+                            UpdDate = new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9820)
                         });
                 });
 
@@ -108,19 +108,19 @@ namespace AbbContentEditor.Migrations
                         {
                             Id = 1,
                             Name = "Lifestyle",
-                            UpdDate = new DateTime(2024, 8, 25, 7, 6, 40, 765, DateTimeKind.Utc).AddTicks(4150)
+                            UpdDate = new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9661)
                         },
                         new
                         {
                             Id = 2,
                             Name = "Sport",
-                            UpdDate = new DateTime(2024, 8, 25, 7, 6, 40, 765, DateTimeKind.Utc).AddTicks(4155)
+                            UpdDate = new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9666)
                         },
                         new
                         {
                             Id = 3,
                             Name = "Software Development",
-                            UpdDate = new DateTime(2024, 8, 25, 7, 6, 40, 765, DateTimeKind.Utc).AddTicks(4156)
+                            UpdDate = new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9667)
                         });
                 });
 

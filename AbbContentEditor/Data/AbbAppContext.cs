@@ -9,40 +9,14 @@ namespace AbbContentEditor.Data
     public class AbbAppContext : IdentityDbContext<IdentityUser>
     {
         //public DbSet<CustomUser> CustomUsers { get; set; }
-        private string _dbPath;
-        private string _mysqlConn { get; set; }
-        private string _pgConn { get; set; }
-        IConfiguration _configuration;
+
         ILogger<AbbAppContext> _logger;
-        public DbSet<Category> Categories { get; set; }
-        public DbSet<Blog> Blogs { get; set; }
+        public virtual DbSet<Category> Categories { get; set; }
+        public virtual DbSet<Blog> Blogs { get; set; }
 
-        public AbbAppContext(IConfiguration configuration, ILogger<AbbAppContext> logger) : base()
-        {
-            _configuration = configuration;
-            _logger = logger;
-            _dbPath = _configuration.GetConnectionString("SQLiteConnectionString");
-            _mysqlConn = _configuration.GetConnectionString("SQLConnectionString");
-            _pgConn = _configuration.GetConnectionString("PGSQLConnectionString");
-        }
+        //public AbbAppContext(IConfiguration configuration) : base()
+        public AbbAppContext(DbContextOptions<AbbAppContext> options) : base(options)    {  }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            try
-            {
-                //optionsBuilder.UseSqlite(_dbPath).LogTo(Console.WriteLine, new[] { DbLoggerCategory.Database.Command.Name }, LogLevel.Information);
-                // optionsBuilder.UseMySql(_mysqlConn);
-                optionsBuilder.UseNpgsql(_pgConn);
-                _logger.LogInformation($"Connection to DB successfull");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Database not available, {ex.Message}");
-                throw new Exception($"Could not connect to database.  + { ex.Message }");
-
-            }
-
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -11,11 +11,11 @@ namespace AbbContentEditor.Controllers
     public class BlogsController : ControllerBase
     {
         private readonly IMapper _mapper;
-        private readonly IUserService _userService;
+        private readonly IBlogService _blogService;
 
-        public BlogsController(IUserService userService, IMapper mapper)
+        public BlogsController(IBlogService blogService, IMapper mapper)
         {
-            _userService = userService;
+            _blogService = blogService;
             _mapper = mapper;
         }
 
@@ -30,7 +30,7 @@ namespace AbbContentEditor.Controllers
           //List<Blog> result = await _context.Blogs.Include(b=>b.Category).ToListAsync();
           //  var resultDto = _mapper.Map<List<Blog>, IEnumerable<BlogListItem>>(result);
           //  Console.WriteLine(result);
-          var us = _userService.BlogRepository.GetAll();
+          var us = _blogService.BlogRepository.GetAll();
 
 
             return Ok(us);
@@ -40,12 +40,12 @@ namespace AbbContentEditor.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<BlogListItemUser>> GetBlog(int id)
         {
-          if (_userService.BlogRepository == null)
+          if (_blogService.BlogRepository == null)
           {
               return NotFound();
           }
             // var blog = _context.Blogs.Include(c => c.Category).FirstOrDefault(b => b.Id.Equals(id));
-            var blog = _userService.BlogRepository.GetById(id);
+            var blog = _blogService.GetBlogById(id);
             if (blog == null)
             {
                 return NotFound();
@@ -62,8 +62,8 @@ namespace AbbContentEditor.Controllers
         [HttpPost]
         public async Task<ActionResult<Blog>> PostBlog(Blog blog)
         {
-            _userService.BlogRepository.Add(blog);
-            _userService.SaveChanges();
+            _blogService.BlogRepository.Add(blog);
+            _blogService.SaveChanges();
 
             return CreatedAtAction("GetBlog", new { id = blog.Id }, blog);
         }
@@ -80,8 +80,8 @@ namespace AbbContentEditor.Controllers
             }
             try
             {
-                _userService.BlogRepository.Update(blog);
-                _userService.SaveChanges();
+                _blogService.BlogRepository.Update(blog);
+                _blogService.SaveChanges();
 
                 return Ok();
             }
@@ -102,7 +102,7 @@ namespace AbbContentEditor.Controllers
 
         private bool BlogExists(int id)
         {
-            return _userService.BlogRepository.GetById(id) != null;
+            return _blogService.BlogRepository.GetById(id) != null;
         }
 
 

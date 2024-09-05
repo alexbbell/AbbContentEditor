@@ -1,15 +1,15 @@
 ﻿using AbbContentEditor;
 using AbbContentEditor.Data;
+using AbbContentEditor.Data.Repositories;
 using AbbContentEditor.Helpers;
 using AbbContentEditor.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
 using System.Text;
-using AbbContentEditor.Controllers;
-using AbbContentEditor.Data.Repositories;
 
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -27,19 +27,29 @@ try
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+
     
     // NLog: Setup NLog for Dependency injection
     builder.Logging.ClearProviders();
     builder.Logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
     builder.Host.UseNLog();
 
-    //builder.Services.AddSingleton<AbbFileRepository>();
+    var connStr = builder.Configuration.GetConnectionString("PGSQLConnectionString");
+
+    builder.Services.AddDbContext<AbbAppContext>(options =>
+    {
+        options.UseNpgsql(connStr);
+    });
+    // var connStr = builder.Configuration.GetConnectionString("PGSQLConnectionString");
+
+    
+    // builder.Services.AddScoped<AbbAppContext>();
     builder.Services.AddScoped<AbbFileRepository>();
 
     IHostEnvironment env = builder.Environment;
-    //var conf = builder.Configuration
-    //    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-    //    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
+    var conf = builder.Configuration
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
 
 
     var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -102,7 +112,7 @@ try
             AddTransient<ITokenManager, TokenManager>();
 
     builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-    builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddScoped<IBlogService, BlogService>();
     builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     {
         options.User.RequireUniqueEmail = false;
@@ -158,8 +168,8 @@ try
 
     app.MapControllers();
 
-    var context = app.Services.GetService<AbbAppContext>();
-    CreateDefaultData createDefaultData = new CreateDefaultData(context);
+    // var context = app.Services.GetService<AbbAppContext>();
+    // CreateDefaultData createDefaultData = new CreateDefaultData(context);
 
 
     app.Run();

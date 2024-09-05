@@ -4,10 +4,12 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace AbbContentEditor.Migrations
 {
     /// <inheritdoc />
-    public partial class _1st : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -52,21 +54,18 @@ namespace AbbContentEditor.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Blogs",
+                name: "Categories",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    Preview = table.Column<string>(type: "text", nullable: false),
-                    ImageUrl = table.Column<string>(type: "text", nullable: false),
-                    Pubdate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    PubDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Blogs", x => x.Id);
+                    table.PrimaryKey("PK_Categories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -175,6 +174,46 @@ namespace AbbContentEditor.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Blogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    Preview = table.Column<string>(type: "text", nullable: false),
+                    TheText = table.Column<string>(type: "text", nullable: false),
+                    ImageUrl = table.Column<string>(type: "text", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    PubDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Blogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Blogs_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "Id", "Name", "PubDate", "UpdDate" },
+                values: new object[,]
+                {
+                    { 1, "Lifestyle", null, new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9661) },
+                    { 2, "Sport", null, new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9666) },
+                    { 3, "Software Development", null, new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9667) }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Blogs",
+                columns: new[] { "Id", "CategoryId", "ImageUrl", "IsDeleted", "Preview", "PubDate", "TheText", "Title", "UpdDate" },
+                values: new object[] { 1, 1, "imageUrl", false, "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…", null, "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.", "My first blog post from dbcontext migration", new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9820) });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Abb_RoleClaims_RoleId",
                 table: "Abb_RoleClaims",
@@ -211,6 +250,11 @@ namespace AbbContentEditor.Migrations
                 table: "Abb_Users",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Blogs_CategoryId",
+                table: "Blogs",
+                column: "CategoryId");
         }
 
         /// <inheritdoc />
@@ -239,6 +283,9 @@ namespace AbbContentEditor.Migrations
 
             migrationBuilder.DropTable(
                 name: "Abb_Users");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
         }
     }
 }
