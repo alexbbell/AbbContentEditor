@@ -18,7 +18,43 @@ namespace AbbContentEditor.Tests
         }
 
         [Test]
-        public void Test_GetBlog_AddsBlogToContext()
+        public void Test_GetBlog_MoqAddsBlogToContext()
+        {
+            IConfiguration config = new ConfigurationBuilder()
+                .AddJsonFile("test_settings.json", optional: true, reloadOnChange: true)
+                .Build();
+
+            DbContextOptions<AbbAppContext> options = new DbContextOptionsBuilder<AbbAppContext>()
+            // .UseInMemoryDatabase(databaseName: "Test_AddBlog_AddsBlogToContext")
+                .UseNpgsql(config.GetConnectionString("PGSQLConnectionString"))
+           .Options;
+
+
+            var context = new Mock<AbbAppContext>();
+            var mockBlogService = new Mock<BlogService>();
+
+            var blog = new Blog
+            {
+                Id = 0,
+                CategoryId = 1,
+                IsDeleted = false,
+                ImageUrl = "imageurl",
+                Title = "test title",
+                TheText = "the full text here",
+                Preview = "preview here"
+            };
+
+            // Assert - Check if the blog was added to the context
+            // mockBlogService.Setup(r => r.AddBlog(blog)).Returns(blog);
+            //mockBlogService.Setup(r => r.AddBlog(blog)).Returns(blog);
+            mockBlogService.Setup(r => r.AddBlog(blog)).Returns(blog);
+
+            //Assert.AreEqual(blog, mockBlogRepository.Object);
+        }
+
+
+        [Test]
+        public void Test_GetBlog_BlogToContext()
         {
             IConfiguration config = new ConfigurationBuilder()
                 .AddJsonFile("test_settings.json", optional: true, reloadOnChange: true)
