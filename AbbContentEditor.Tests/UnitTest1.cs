@@ -12,22 +12,30 @@ namespace AbbContentEditor.Tests
 {
     public class Tests
     {
+
+        IConfiguration _config;
+        DbContextOptions<AbbAppContext> _options;
+        public Tests()
+        {
+            _config = new ConfigurationBuilder()
+                .AddJsonFile("test_settings.json", optional: true, reloadOnChange: true)
+                .Build();
+            _options = new DbContextOptionsBuilder<AbbAppContext>()
+            // .UseInMemoryDatabase(databaseName: "Test_AddBlog_AddsBlogToContext")
+                .UseNpgsql(_config.GetConnectionString("PGSQLConnectionString"))
+           .Options;
+        }
         [SetUp]
         public void Setup()
         {
+            
         }
 
         [Test]
         public void Test_GetBlog_MoqAddsBlogToContext()
         {
-            IConfiguration config = new ConfigurationBuilder()
-                .AddJsonFile("test_settings.json", optional: true, reloadOnChange: true)
-                .Build();
+            
 
-            DbContextOptions<AbbAppContext> options = new DbContextOptionsBuilder<AbbAppContext>()
-            // .UseInMemoryDatabase(databaseName: "Test_AddBlog_AddsBlogToContext")
-                .UseNpgsql(config.GetConnectionString("PGSQLConnectionString"))
-           .Options;
 
 
             var context = new Mock<AbbAppContext>();
@@ -66,7 +74,7 @@ namespace AbbContentEditor.Tests
            .Options;
 
 
-            using var context = new AbbAppContext(options);
+            using var context = new AbbAppContext(_options);
 
             var mockBlogRepository = new Repository<Blog>(context);
             var mockCategoryRepository = new Repository<Category>(context);

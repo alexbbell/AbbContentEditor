@@ -1,64 +1,82 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AbbContentEditor.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Formats.Asn1;
 
 namespace AbbContentEditor.Data.Repositories
 {
     public class Repository<T> : IRepository<T> where T : class
     {
-        private readonly AbbAppContext _context;
-        private readonly DbSet<T> _dbSet;
+        private readonly DbContext _context;
+        public DbSet<T> _dbSet;
 
-        public Repository(AbbAppContext context)
+        public Repository(DbContext context)
         {
             _context = context;
-            _dbSet = _context.Set<T>();
+            _dbSet = _context.Set<T>(); // Initialize DbSet for the generic entity type
         }
 
-        public T GetById(int id)
+        // Get all records (returns IQueryable to allow further filtering and querying)
+        // Get all records with pagination
+        public IQueryable<T> GetAll()
         {
-            //return _dbSet.Find(id);
-            return _dbSet.Find(id);
+            return _dbSet;
         }
 
-        public IEnumerable<T> GetAll()
+        // Get all records with pagination
+        public IQueryable<T> GetAll(int pageNumber, int pageSize)
         {
-            return _dbSet.ToList();
+            return _dbSet
+                .Skip((pageNumber - 1) * pageSize) // Skip the records based on the page number
+                .Take(pageSize); // Take only the number of records for the current page
         }
-
-        public void Add(T entity)
+        // Find with filtering
+        public IQueryable<T> Find(Func<IQueryable<T>, IQueryable<T>> filter = null, int pageNumber = 1, int pageSize = 10)
         {
-            _dbSet.Add(entity);
+            IQueryable<T> query = _dbSet;
+
+            if (filter != null)
+            {
+                query = filter(query); // Apply the filter
+            }
+
+
+            // Apply pagination
+            return query
+                .Skip((pageNumber - 1) * pageSize) // Skip the previous pages' records
+                .Take(pageSize); // Take only the pageSize records
         }
 
-        public void Update(T entity)
+        // Get a single entity by its primary key (assuming the key is int)
+        public async Task<T> GetByIdAsync(int id)
         {
-            _context.Entry(entity).State = EntityState.Modified;
+            return await _dbSet.FindAsync(id);
         }
 
-        public void Delete(T entity)
+        // Add a new entity
+        public async Task AddAsync(T entity)
+        {
+            if (typeof(T).IsSubclassOf(typeof(BaseClass)))
+            {
+                // Assuming entity is of type BaseClass or derived from it
+                if (entity is BaseClass baseEntity)
+                {
+                    baseEntity.PubDate = DateTime.UtcNow;
+                }
+            }
+            await _dbSet.AddAsync(entity);
+        }
+
+        // Update an existing entity
+        public async Task UpdateAsync(T entity)
+        {
+            _dbSet.Update(entity);
+        }
+
+        // Delete an entity
+        public async Task DeleteAsync(T entity)
         {
             _dbSet.Remove(entity);
         }
-
-
-        private bool disposed = false;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposed)
-            {
-                if (disposing)
-                {
-                    _context.Dispose();
-                }
-            }
-            disposed = true;
-        }
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
     }
-
 
 }

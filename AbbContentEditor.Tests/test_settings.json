@@ -16,7 +16,7 @@
   "ConnectionStrings": {
     "SQLiteConnectionString": "data source=./Database/abb-app.db",
     "SQLConnectionString": "server=localhost;user=root;password=password;database=abeliaev;allowPublicKeyRetrieval=true",
-    "PGSQLConnectionString": "Server = 127.0.0.1;Port=5432; Database = default_database; User Id = username; Password = password;"
+    "PGSQLConnectionString": "Server = 127.0.0.1;Port=5432; Database = alex; User Id = alex; Password = alex;"
   }
 
 

@@ -1,4 +1,5 @@
 ﻿using AbbContentEditor.Data;
+using AbbContentEditor.Data.UoW;
 using AbbContentEditor.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -11,47 +12,45 @@ namespace AbbContentEditor.Controllers
     public class BlogsController : ControllerBase
     {
         private readonly IMapper _mapper;
-        private readonly IBlogService _blogService;
-
-        public BlogsController(IBlogService blogService, IMapper mapper)
+        private readonly IUnitOfWork _unitOfWork;
+      
+        public BlogsController(IUnitOfWork unitOfWork, IMapper mapper)
+            
         {
-            _blogService = blogService;
+            _unitOfWork = unitOfWork;
+            // _blogRepository = new Repository<Blog>(context);
             _mapper = mapper;
+            // _appContext = context;
         }
 
         // GET: api/Blogs
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<BlogListItem>>> GetBlogs()
+        public async Task<ActionResult<IEnumerable<BlogListItem>>> GetBlogs([FromQuery]int page = 1, [FromQuery] int pageSize = 10)
         {
-          //if (_context.Blogs == null)
-          //{
-          //    return NotFound();
-          //}
-          //List<Blog> result = await _context.Blogs.Include(b=>b.Category).ToListAsync();
-          //  var resultDto = _mapper.Map<List<Blog>, IEnumerable<BlogListItem>>(result);
-          //  Console.WriteLine(result);
-          var us = _blogService.BlogRepository.GetAll();
 
-
-            return Ok(us);
+            var total = await _unitOfWork.blogRepository.GetAll().CountAsync();
+            var result = await _unitOfWork.blogRepository.GetPaginatedStudentsWithCategory(page, pageSize).ToListAsync();
+            var res = _mapper.Map<IEnumerable<Blog>, IEnumerable<BlogListItem>>(result);
+            
+          return Ok(res);
         }
 
         // GET: api/Blogs/5
         [HttpGet("{id}")]
         public async Task<ActionResult<BlogListItemUser>> GetBlog(int id)
         {
-          if (_blogService.BlogRepository == null)
-          {
-              return NotFound();
-          }
+            if (_unitOfWork.blogRepository == null)
+            {
+                return NotFound();
+            }
             // var blog = _context.Blogs.Include(c => c.Category).FirstOrDefault(b => b.Id.Equals(id));
-            var blog = _blogService.GetBlogById(id);
+            var blog = await _unitOfWork.blogRepository.GetByIdAsync(id);
             if (blog == null)
             {
                 return NotFound();
             }
             Console.WriteLine($"blog {blog.Title}");
-            return Ok(_mapper.Map<Blog, BlogListItemUser>(blog) );
+            return Ok(_mapper.Map<Blog, BlogListItemUser>(blog));
         }
 
 
@@ -62,10 +61,16 @@ namespace AbbContentEditor.Controllers
         [HttpPost]
         public async Task<ActionResult<Blog>> PostBlog(Blog blog)
         {
-            _blogService.BlogRepository.Add(blog);
-            _blogService.SaveChanges();
-
-            return CreatedAtAction("GetBlog", new { id = blog.Id }, blog);
+            _unitOfWork.blogRepository.AddAsync(blog);
+            if(await _unitOfWork.Commit())
+            {
+                return CreatedAtAction("GetBlog", new { id = blog.Id }, blog);
+            }
+            else
+            {
+                return BadRequest();
+            }
+            //_unitOfWork.Commit();
         }
 
 
@@ -80,14 +85,14 @@ namespace AbbContentEditor.Controllers
             }
             try
             {
-                _blogService.BlogRepository.Update(blog);
-                _blogService.SaveChanges();
+                _unitOfWork.blogRepository.UpdateAsync(blog);
+                _unitOfWork.Commit();
 
                 return Ok();
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                if (!BlogExists(id))
+                if (await _unitOfWork.blogRepository.GetByIdAsync(id) == null)
                 {
                     return NotFound();
                 }
@@ -97,13 +102,35 @@ namespace AbbContentEditor.Controllers
                 }
             }
 
-            return NoContent();
+
         }
 
-        private bool BlogExists(int id)
+
+        // DELETE: api/Blogs/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBlog(int id)
         {
-            return _blogService.BlogRepository.GetById(id) != null;
+
+            var blog = await _unitOfWork.blogRepository.GetByIdAsync(id);
+            if (blog == null) return NotFound();
+
+            try
+            {
+                _ = _unitOfWork.blogRepository.DeleteAsync(blog);
+                _ = _unitOfWork.Commit();
+                return NoContent();
+            }
+            catch(Exception ex )
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
+
+        //private bool BlogExists(int id)
+        //{
+        //    //return _blogRepository.GetById(id) != null;
+        //}
 
 
     }

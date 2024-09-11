@@ -1,6 +1,7 @@
 ﻿using AbbContentEditor;
 using AbbContentEditor.Data;
 using AbbContentEditor.Data.Repositories;
+using AbbContentEditor.Data.UoW;
 using AbbContentEditor.Helpers;
 using AbbContentEditor.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -111,8 +112,8 @@ try
     builder.Services.AddTransient<AbbAppContext>().
             AddTransient<ITokenManager, TokenManager>();
 
-    builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-    builder.Services.AddScoped<IBlogService, BlogService>();
+    // builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+    builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     {
         options.User.RequireUniqueEmail = false;
