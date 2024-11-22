@@ -1,12 +1,10 @@
 using AbbContentEditor.Data;
 using AbbContentEditor.Data.Repositories;
+using AbbContentEditor.Data.UoW;
 using AbbContentEditor.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Moq;
-using Newtonsoft.Json;
 
 namespace AbbContentEditor.Tests
 {
@@ -15,103 +13,76 @@ namespace AbbContentEditor.Tests
 
         IConfiguration _config;
         DbContextOptions<AbbAppContext> _options;
+        private DbContext _dbContext;
+        private AbbAppContext _mockContext;
+        private IUnitOfWork _unitOfWork;
+        private Repository<Category> _mockCatRepository;
+        private Mock<BlogRepository> _blogRepository;
+
         public Tests()
         {
             _config = new ConfigurationBuilder()
                 .AddJsonFile("test_settings.json", optional: true, reloadOnChange: true)
                 .Build();
-            _options = new DbContextOptionsBuilder<AbbAppContext>()
-            // .UseInMemoryDatabase(databaseName: "Test_AddBlog_AddsBlogToContext")
-                .UseNpgsql(_config.GetConnectionString("PGSQLConnectionString"))
-           .Options;
+            
         }
         [SetUp]
         public void Setup()
         {
+            _options = new DbContextOptionsBuilder<AbbAppContext>()
+               //.UseInMemoryDatabase(databaseName: "Test_AddBlog_AddsBlogToContext")
+               .UseNpgsql(_config.GetConnectionString("PGSQLConnectionString"))
+                .Options;
             
+            _mockContext = new AbbAppContext(_options);
+            _mockCatRepository = new Repository<Category>(_mockContext);
+            _blogRepository = new Mock<BlogRepository>(_mockContext);
+
+            // Set up the UnitOfWork with the mocked context and repository
+            //_unitOfWork = new UnitOfWork(_mockContext.Object);
+            _unitOfWork = new UnitOfWork(_mockContext);
+
+
         }
 
         [Test]
-        public void Test_GetBlog_MoqAddsBlogToContext()
+        public async Task Test_GetBlog_MoqAddsBlogToContext()
         {
-            
+            var result =  _unitOfWork.blogRepository.GetAll();
 
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.Greater(result.Count(), 5); // Assuming two items are in the mocked list
 
-
-            var context = new Mock<AbbAppContext>();
-            var mockBlogService = new Mock<BlogService>();
-
-            var blog = new Blog
-            {
-                Id = 0,
-                CategoryId = 1,
-                IsDeleted = false,
-                ImageUrl = "imageurl",
-                Title = "test title",
-                TheText = "the full text here",
-                Preview = "preview here"
-            };
-
-            // Assert - Check if the blog was added to the context
-            // mockBlogService.Setup(r => r.AddBlog(blog)).Returns(blog);
-            //mockBlogService.Setup(r => r.AddBlog(blog)).Returns(blog);
-            mockBlogService.Setup(r => r.AddBlog(blog)).Returns(blog);
-
-            //Assert.AreEqual(blog, mockBlogRepository.Object);
         }
 
 
         [Test]
-        public void Test_GetBlog_BlogToContext()
+        public async Task Test_GetCategory()
         {
-            IConfiguration config = new ConfigurationBuilder()
-                .AddJsonFile("test_settings.json", optional: true, reloadOnChange: true)
-                .Build();
-
-            DbContextOptions<AbbAppContext> options = new DbContextOptionsBuilder<AbbAppContext>()
-            // .UseInMemoryDatabase(databaseName: "Test_AddBlog_AddsBlogToContext")
-                .UseNpgsql(config.GetConnectionString("PGSQLConnectionString"))
-           .Options;
-
-
-            using var context = new AbbAppContext(_options);
-
-            var mockBlogRepository = new Repository<Blog>(context);
-            var mockCategoryRepository = new Repository<Category>(context);
-            var blogService = new BlogService(context, mockBlogRepository, mockCategoryRepository);
-
-            var blog = new Blog
-            {
-                Id = 0,
-                CategoryId = 1,
-                IsDeleted = false,
-                ImageUrl = "imageurl",
-                Title = "test title",
-                TheText = "the full text here",
-                Preview = "preview here"
-            };
-
-            // Assert - Check if the blog was added to the context
-            var getBlog = blogService.GetBlogById(2);
-            Assert.NotNull(getBlog);
-            Assert.AreEqual(4, getBlog.CategoryId);
+            var category = new Category { Id = 2, Name = "Sport" };
+            var result = _mockCatRepository.GetByIdAsync(2).Result;
+            Console.WriteLine(result);
+            Assert.IsNotNull(result);
+            Assert.AreEqual("Sport", result.Name);
         }
 
+        [Test]
+        public async Task Test_AddBankPay()
+        {
+            BankOperation bo = new BankOperation()
+            {
+                Id = 1,
+                Name = "test 2",
+                IsPayable = true,
+                TheSumm = 200
+            };
 
-        //[Test]
-        //public void Comapare2Files()
-        //{
-        //    string editedContent = File.ReadAllText(@"D:\Projects\alekseibeliaev3\client\public\locales\en\en-translation.json");
-        //    string defaultContent = File.ReadAllText(@"D:\Projects\alekseibeliaev3\client\public\locales.bak\en\en-translation.json");
+            var result = _unitOfWork.bankOperationRepository.AddAsync(bo);
+            _unitOfWork.Commit();
+            Assert.IsNotNull(result);
+            
+        }
 
-        //    var scEdited = JsonConvert.DeserializeObject<SiteContent>(editedContent);
-        //    var scDefault = JsonConvert.DeserializeObject<SiteContent>(defaultContent);
-
-        //    Assert.AreEqual(scEdited.main.titleAbout, scDefault.main.titleAbout);
-        //    Assert.AreEqual(scEdited.main.email, scDefault.main.email);
-        //    Assert.AreEqual(scEdited.main.description, scDefault.main.description);
-
-        //    Assert.Pass();
-        //}
     }
 }

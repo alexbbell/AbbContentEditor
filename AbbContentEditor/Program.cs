@@ -109,11 +109,16 @@ try
     });
 
     Console.WriteLine(DateTime.Now);
-    builder.Services.AddTransient<AbbAppContext>().
+    builder.Services.AddScoped<AbbAppContext>().
             AddTransient<ITokenManager, TokenManager>();
 
-    // builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+    builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+    builder.Services.AddScoped<ImageUtilities>();
+
+    //.AddHttpContextAccessor()
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+
     builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     {
         options.User.RequireUniqueEmail = false;
@@ -169,11 +174,11 @@ try
 
     app.MapControllers();
 
-    // var context = app.Services.GetService<AbbAppContext>();
-    // CreateDefaultData createDefaultData = new CreateDefaultData(context);
 
 
     app.Run();
+     var context = app.Services.GetService<AbbAppContext>();
+     CreateDefaultData createDefaultData = new CreateDefaultData(context);
 }
 catch (Exception exception)
 {

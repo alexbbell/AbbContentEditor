@@ -58,7 +58,7 @@ namespace AbbContentEditor.Helpers
                 issuer: _jwtOptions.Issuer,
                 audience: _jwtOptions.Audience,
                 claims: claims,
-                expires: DateTime.Now.Add(TimeSpan.FromMinutes(3600)),
+                expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(3600)),
                 notBefore: DateTime.UtcNow,
                 signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
                 );

@@ -12,18 +12,44 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AbbContentEditor.Migrations
 {
     [DbContext(typeof(AbbAppContext))]
-    [Migration("20240903150357_initial")]
-    partial class initial
+    [Migration("20241117162239_countdowns")]
+    partial class countdowns
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.20")
+                .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("AbbContentEditor.Models.BankOperation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsPayable")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("PayDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<double>("TheSumm")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BankOperations");
+                });
 
             modelBuilder.Entity("AbbContentEditor.Models.Blog", b =>
                 {
@@ -77,7 +103,7 @@ namespace AbbContentEditor.Migrations
                             Preview = "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…",
                             TheText = "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.",
                             Title = "My first blog post from dbcontext migration",
-                            UpdDate = new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9820)
+                            UpdDate = new DateTime(2024, 11, 17, 16, 22, 35, 691, DateTimeKind.Utc).AddTicks(9131)
                         });
                 });
 
@@ -93,12 +119,6 @@ namespace AbbContentEditor.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("PubDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("UpdDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
@@ -107,21 +127,39 @@ namespace AbbContentEditor.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Lifestyle",
-                            UpdDate = new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9661)
+                            Name = "Lifestyle"
                         },
                         new
                         {
                             Id = 2,
-                            Name = "Sport",
-                            UpdDate = new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9666)
+                            Name = "Sport"
                         },
                         new
                         {
                             Id = 3,
-                            Name = "Software Development",
-                            UpdDate = new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9667)
+                            Name = "Software Development"
                         });
+                });
+
+            modelBuilder.Entity("AbbContentEditor.Models.Countdown", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Countdowns");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

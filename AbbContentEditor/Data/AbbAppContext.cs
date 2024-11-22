@@ -13,6 +13,8 @@ namespace AbbContentEditor.Data
         ILogger<AbbAppContext> _logger;
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Blog> Blogs { get; set; }
+        public virtual DbSet<BankOperation> BankOperations { get; set; }
+        public virtual DbSet<Countdown> Countdowns { get; set; }
 
         //public AbbAppContext(IConfiguration configuration) : base()
         public AbbAppContext(DbContextOptions<AbbAppContext> options) : base(options)    {  }
@@ -38,7 +40,7 @@ namespace AbbContentEditor.Data
             {
                 new Category
                 {
-                    Id = 1,
+                    Id = 1, 
                     Name = "Lifestyle"
                 },
                 new Category

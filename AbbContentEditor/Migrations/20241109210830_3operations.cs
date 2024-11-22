@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AbbContentEditor.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class _3operations : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -54,14 +54,28 @@ namespace AbbContentEditor.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Categories",
+                name: "BankOperations",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    PubDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    TheSumm = table.Column<double>(type: "double precision", nullable: false),
+                    PayDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsPayable = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BankOperations", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Categories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -180,12 +194,12 @@ namespace AbbContentEditor.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Title = table.Column<string>(type: "text", nullable: false),
                     Preview = table.Column<string>(type: "text", nullable: false),
                     TheText = table.Column<string>(type: "text", nullable: false),
                     ImageUrl = table.Column<string>(type: "text", nullable: false),
                     CategoryId = table.Column<int>(type: "integer", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
                     PubDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UpdDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -201,18 +215,18 @@ namespace AbbContentEditor.Migrations
 
             migrationBuilder.InsertData(
                 table: "Categories",
-                columns: new[] { "Id", "Name", "PubDate", "UpdDate" },
+                columns: new[] { "Id", "Name" },
                 values: new object[,]
                 {
-                    { 1, "Lifestyle", null, new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9661) },
-                    { 2, "Sport", null, new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9666) },
-                    { 3, "Software Development", null, new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9667) }
+                    { 1, "Lifestyle" },
+                    { 2, "Sport" },
+                    { 3, "Software Development" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Blogs",
                 columns: new[] { "Id", "CategoryId", "ImageUrl", "IsDeleted", "Preview", "PubDate", "TheText", "Title", "UpdDate" },
-                values: new object[] { 1, 1, "imageUrl", false, "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…", null, "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.", "My first blog post from dbcontext migration", new DateTime(2024, 9, 3, 15, 3, 57, 104, DateTimeKind.Utc).AddTicks(9820) });
+                values: new object[] { 1, 1, "imageUrl", false, "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…", null, "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.", "My first blog post from dbcontext migration", new DateTime(2024, 11, 9, 21, 8, 29, 239, DateTimeKind.Utc).AddTicks(3594) });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Abb_RoleClaims_RoleId",
@@ -274,6 +288,9 @@ namespace AbbContentEditor.Migrations
 
             migrationBuilder.DropTable(
                 name: "Abb_UserTokens");
+
+            migrationBuilder.DropTable(
+                name: "BankOperations");
 
             migrationBuilder.DropTable(
                 name: "Blogs");

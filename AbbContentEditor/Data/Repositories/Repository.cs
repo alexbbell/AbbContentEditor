@@ -1,15 +1,14 @@
 ﻿using AbbContentEditor.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Formats.Asn1;
 
 namespace AbbContentEditor.Data.Repositories
 {
     public class Repository<T> : IRepository<T> where T : class
     {
-        private readonly DbContext _context;
+        private readonly AbbAppContext _context;
         public DbSet<T> _dbSet;
 
-        public Repository(DbContext context)
+        public Repository(AbbAppContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>(); // Initialize DbSet for the generic entity type
