@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AbbContentEditor.Data;
 using AbbContentEditor.Models;
+using Newtonsoft.Json.Linq;
 
 namespace AbbContentEditor.Controllers
 {
@@ -29,17 +30,17 @@ namespace AbbContentEditor.Controllers
         }
 
         // GET: api/Countdowns/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<int>> GetCountdown(Guid id)
+        [HttpGet("{username}")]
+        public async Task<ActionResult<DateTime>> GetCountdown(string username)
         {
-            var countdown = await _context.Countdowns.FindAsync(id);
+            var user = _context.Users.FirstOrDefault(u => u.UserName.Equals(username));
+            if (user == null) return BadRequest();
 
-            if (countdown == null)
-            {
-                return NotFound();
-            }
-            int result = (int)(countdown.EndTime - DateTime.Now).TotalSeconds;
-            if (result < 0) { result = 0; }
+            var existedCountdown = _context.Countdowns.FirstOrDefault(x => x.Id == new Guid(user.Id));
+            Console.WriteLine($"{existedCountdown.EndTime.Kind} {existedCountdown.EndTime} { DateTime.UtcNow} ");
+            //DateTime result = (existedCountdown.EndTime > DateTime.UtcNow) ? existedCountdown.EndTime: DateTime.MinValue;
+            DateTime result = existedCountdown.EndTime.ToLocalTime();
+
             return result;
         }
 
@@ -77,12 +78,28 @@ namespace AbbContentEditor.Controllers
         // POST: api/Countdowns
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Countdown>> PostCountdown(Countdown countdown)
+        public async Task<ActionResult<Countdown>> PostCountdown([FromBody]  CountDownRequest data)
         {
-            _context.Countdowns.Add(countdown);
+            var username = data.UserName;
+            var user = _context.Users.FirstOrDefault(u => u.UserName.Equals(username));
+            if(user == null)  return BadRequest();
+
+            var existedCountdown = _context.Countdowns.FirstOrDefault(x=>x.Id == new Guid(user.Id));
+            if (existedCountdown == null)
+            {
+                existedCountdown = new Countdown { Id = new Guid(user.Id), Name = username, CreatedAt = DateTime.UtcNow, 
+                    EndTime = (data.Action == "start") ? DateTime.UtcNow.AddMinutes(20) : DateTime.MinValue
+                };
+                _context.Countdowns.Add(existedCountdown );
+            }
+            else
+            {
+                existedCountdown.EndTime = (data.Action == "start") ? DateTime.UtcNow.AddMinutes(20) : DateTime.MinValue;
+                _context.Countdowns.Update(existedCountdown);
+            }
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCountdown", new { id = countdown.Id }, countdown);
+            return CreatedAtAction("GetCountdown", new { username = username }, existedCountdown);
         }
 
         // DELETE: api/Countdowns/5

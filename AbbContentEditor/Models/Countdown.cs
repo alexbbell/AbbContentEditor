@@ -12,4 +12,9 @@ namespace AbbContentEditor.Models
         public DateTime CreatedAt { get; set; }
 
     }
+    public class CountDownRequest
+    {
+        public string UserName { get; set; }
+        public string Action { get; set; }
+    }
 }

@@ -41,10 +41,7 @@ try
     {
         options.UseNpgsql(connStr);
     });
-    // var connStr = builder.Configuration.GetConnectionString("PGSQLConnectionString");
-
     
-    // builder.Services.AddScoped<AbbAppContext>();
     builder.Services.AddScoped<AbbFileRepository>();
 
     IHostEnvironment env = builder.Environment;
@@ -175,10 +172,16 @@ try
     app.MapControllers();
 
 
+    //var context = app.Services.GetService<AbbAppContext>();
+    //CreateDefaultData createDefaultData = new CreateDefaultData(context);
+    using (var scope = app.Services.CreateScope())
+    {
+        var scopedProvider = scope.ServiceProvider;
+        var context = scopedProvider.GetRequiredService<AbbAppContext>();
+        CreateDefaultData createDefaultData = new CreateDefaultData(context);        
+    }
 
     app.Run();
-     var context = app.Services.GetService<AbbAppContext>();
-     CreateDefaultData createDefaultData = new CreateDefaultData(context);
 }
 catch (Exception exception)
 {
