@@ -1,5 +1,4 @@
 ﻿using AbbContentEditor.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -47,24 +46,25 @@ namespace AbbContentEditor.Helpers
             return principal;
         }
 
-        public string GetToken(CustomUser user)
-        {
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Name)
-            };
-            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
-            var jwt = new JwtSecurityToken(
-                issuer: _jwtOptions.Issuer,
-                audience: _jwtOptions.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(3600)),
-                notBefore: DateTime.UtcNow,
-                signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
-                );
+        // commented 14 december 2024
+        //public string GetToken(CustomUser user)
+        //{
+        //    List<Claim> claims = new List<Claim>
+        //    {
+        //        new Claim(ClaimTypes.Name, user.Name)
+        //    };
+        //    var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
+        //    var jwt = new JwtSecurityToken(
+        //        issuer: _jwtOptions.Issuer,
+        //        audience: _jwtOptions.Audience,
+        //        claims: claims,
+        //        expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(3600)),
+        //        notBefore: DateTime.UtcNow,
+        //        signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
+        //        );
 
-            return new JwtSecurityTokenHandler().WriteToken(jwt);
-        }
+        //    return new JwtSecurityTokenHandler().WriteToken(jwt);
+        //}
 
         public string GetAccessToken(string user)
         {

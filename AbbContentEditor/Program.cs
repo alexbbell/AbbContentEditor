@@ -37,9 +37,16 @@ try
 
     var connStr = builder.Configuration.GetConnectionString("PGSQLConnectionString");
 
+    
     builder.Services.AddDbContext<AbbAppContext>(options =>
     {
-        options.UseNpgsql(connStr);
+        options.UseNpgsql( connStr, npgsqlOptions => {
+            npgsqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorCodesToAdd: null
+                );
+        });
     });
     
     builder.Services.AddScoped<AbbFileRepository>();
@@ -52,11 +59,7 @@ try
 
     var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-    // string allowedHosts = builder.Configuration.GetSection("AllowedHosts").Value.ToString();
-    //string[] allowedHosts = builder.Configuration.GetSection("AllowedHosts").Value.ToString().Split(";");
-
     Console.WriteLine(env.IsDevelopment());
-    //
     string allowedHosts = (env.IsDevelopment()) ? "http://localhost:3000, http://localhost:3001" : "https://alexey.beliaeff.ru";
 
     builder.Services.AddCors(options =>
@@ -65,7 +68,7 @@ try
             policy =>
             {
                 policy
-                .WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:5000", "https://localhost:5001")
+                .WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:5000", "https://localhost:5001", "https://dev.beliaeff.ru")
 
                 .AllowAnyMethod()
                 .AllowAnyHeader()

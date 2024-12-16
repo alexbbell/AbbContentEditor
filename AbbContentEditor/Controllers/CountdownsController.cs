@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using AbbContentEditor.Data;
+using AbbContentEditor.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using AbbContentEditor.Data;
-using AbbContentEditor.Models;
-using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace AbbContentEditor.Controllers
 {
@@ -16,10 +11,12 @@ namespace AbbContentEditor.Controllers
     public class CountdownsController : ControllerBase
     {
         private readonly AbbAppContext _context;
+        private ILogger<Countdown> _logger;
 
-        public CountdownsController(AbbAppContext context)
+        public CountdownsController(AbbAppContext context, ILogger<Countdown> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/Countdowns
@@ -34,14 +31,24 @@ namespace AbbContentEditor.Controllers
         public async Task<ActionResult<DateTime>> GetCountdown(string username)
         {
             var user = _context.Users.FirstOrDefault(u => u.UserName.Equals(username));
-            if (user == null) return BadRequest();
+            if (user == null)
+            {
+                _logger.LogError($"Non existing user {user}");
+                return DateTime.UtcNow;
+            }
+            try
+            {
+                var existedCountdown = _context.Countdowns.FirstOrDefault(x => x.Id == new Guid(user.Id));
+                DateTime result = existedCountdown.EndTime.ToLocalTime();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return DateTime.MinValue;
 
-            var existedCountdown = _context.Countdowns.FirstOrDefault(x => x.Id == new Guid(user.Id));
-            Console.WriteLine($"{existedCountdown.EndTime.Kind} {existedCountdown.EndTime} { DateTime.UtcNow} ");
+            }
             //DateTime result = (existedCountdown.EndTime > DateTime.UtcNow) ? existedCountdown.EndTime: DateTime.MinValue;
-            DateTime result = existedCountdown.EndTime.ToLocalTime();
 
-            return result;
         }
 
         // PUT: api/Countdowns/5
@@ -51,7 +58,7 @@ namespace AbbContentEditor.Controllers
         {
             if (id != countdown.Id)
             {
-                return BadRequest();
+                return NoContent();
             }
 
             _context.Entry(countdown).State = EntityState.Modified;
@@ -60,15 +67,16 @@ namespace AbbContentEditor.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
                 if (!CountdownExists(id))
                 {
+                    _logger.LogError(ex.Message);
                     return NotFound();
                 }
                 else
                 {
-                    throw;
+                    _logger.LogError(ex.Message);
                 }
             }
 

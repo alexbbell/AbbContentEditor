@@ -23,10 +23,8 @@ namespace AbbContentEditor.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
             // Override default AspNet Identity table names
             string prefix = "Abb_";
-            // modelBuilder.Entity<CustomUser>(entity => { entity.ToTable(name: $"{prefix}Users"); });
             modelBuilder.Entity<IdentityUser>(entity => { entity.ToTable(name: $"{prefix}Users"); });
             modelBuilder.Entity<IdentityRole>(entity => { entity.ToTable(name: $"{prefix}Roles"); });
             modelBuilder.Entity<IdentityUserRole<string>>(entity => { entity.ToTable($"{prefix}UserRoles"); });

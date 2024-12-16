@@ -3,6 +3,7 @@ using AbbContentEditor.Helpers;
 using AbbContentEditor.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -56,8 +57,10 @@ namespace AbbContentEditor.Controllers
                     else
                     {
                         _logger.LogError($"User {model.Email} could not register.");
+                        string err = string.Join(",", result.Errors.Select(x=> x.Description));
 
-                        return new BadRequestObjectResult("There was an error processing your request, please try again.");
+                        return new BadRequestObjectResult($"There was an error processing your request, please try again. " +
+                            $"{err}");
                     }
                 }
             }
@@ -79,9 +82,6 @@ namespace AbbContentEditor.Controllers
         {
             if (ModelState.IsValid)
             {
-
-
-
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, 
                     model.RememberMe, lockoutOnFailure: false);
                 Console.WriteLine($"Login {model.Email}");
@@ -108,7 +108,6 @@ namespace AbbContentEditor.Controllers
                     _abbAppContext.SaveChangesAsync();
 
                     return Ok(tokenApiModel);
-                    //return new OkObjectResult(result);
                 }
                 else
                 {
@@ -194,6 +193,17 @@ namespace AbbContentEditor.Controllers
             });
         }
 
+        //[AllowAnonymous]
+        //[HttpPost("register")]
+        //[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        //{
+        //    var response = await _authenticationService.Register(request);
+
+        //    return Ok(response);
+        //}
 
 
         [HttpGet("exit")]
