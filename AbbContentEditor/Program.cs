@@ -29,7 +29,7 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
-    
+
     // NLog: Setup NLog for Dependency injection
     builder.Logging.ClearProviders();
     builder.Logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
@@ -40,13 +40,15 @@ try
     
     builder.Services.AddDbContext<AbbAppContext>(options =>
     {
-        options.UseNpgsql( connStr, npgsqlOptions => {
-            npgsqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(10),
-                errorCodesToAdd: null
-                );
-        });
+        options.UseNpgsql(connStr);
+        //options.UseNpgsql(connStr, npgsqlOptions =>
+        //{
+        //    npgsqlOptions.EnableRetryOnFailure(
+        //        maxRetryCount: 5,
+        //        maxRetryDelay: TimeSpan.FromSeconds(10),
+        //        errorCodesToAdd: null
+        //        );
+        //});
     });
     
     builder.Services.AddScoped<AbbFileRepository>();
@@ -61,6 +63,7 @@ try
 
     Console.WriteLine(env.IsDevelopment());
     string allowedHosts = (env.IsDevelopment()) ? "http://localhost:3000, http://localhost:3001" : "https://alexey.beliaeff.ru";
+    
 
     builder.Services.AddCors(options =>
     {
@@ -68,7 +71,13 @@ try
             policy =>
             {
                 policy
-                .WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:5000", "https://localhost:5001", "https://dev.beliaeff.ru")
+                .WithOrigins("http://localhost:3000", 
+                        "http://localhost:3001", 
+                        "http://localhost:5000", 
+                        "https://localhost:5001", 
+                        "https://dev.beliaeff.ru",
+                        "https://api.beliaeff.ru"
+                        )
 
                 .AllowAnyMethod()
                 .AllowAnyHeader()
@@ -95,8 +104,13 @@ try
         options.User.AllowedUserNameCharacters =
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
         options.User.RequireUniqueEmail = false;
+        options.Tokens.ProviderMap.Add("CustomEmailConfirmation",
+        new TokenProviderDescriptor(
+            typeof(CustomEmailConfirmationTokenProvider<IdentityUser>)));
+        options.Tokens.EmailConfirmationTokenProvider = "CustomEmailConfirmation";
 
     });
+    builder.Services.AddTransient<CustomEmailConfirmationTokenProvider<IdentityUser>>();
 
     //builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
     builder.Services.AddAutoMapper(typeof(Program).Assembly);

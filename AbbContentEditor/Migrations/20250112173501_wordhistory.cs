@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AbbContentEditor.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class wordhistory : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -203,6 +203,29 @@ namespace AbbContentEditor.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WordHistories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Word = table.Column<string>(type: "text", nullable: false),
+                    Correct = table.Column<bool>(type: "boolean", nullable: false),
+                    IdentityUserId = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    AnswerTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WordHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WordHistories_Abb_Users_IdentityUserId",
+                        column: x => x.IdentityUserId,
+                        principalTable: "Abb_Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Blogs",
                 columns: table => new
                 {
@@ -240,7 +263,7 @@ namespace AbbContentEditor.Migrations
             migrationBuilder.InsertData(
                 table: "Blogs",
                 columns: new[] { "Id", "CategoryId", "ImageUrl", "IsDeleted", "Preview", "PubDate", "TheText", "Title", "UpdDate" },
-                values: new object[] { 1, 1, "imageUrl", false, "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…", null, "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.", "My first blog post from dbcontext migration", new DateTime(2024, 11, 24, 8, 12, 37, 145, DateTimeKind.Utc).AddTicks(1056) });
+                values: new object[] { 1, 1, "imageUrl", false, "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…", null, "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.", "My first blog post from dbcontext migration", new DateTime(2025, 1, 12, 17, 35, 0, 460, DateTimeKind.Utc).AddTicks(5055) });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Abb_RoleClaims_RoleId",
@@ -283,6 +306,11 @@ namespace AbbContentEditor.Migrations
                 name: "IX_Blogs_CategoryId",
                 table: "Blogs",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WordHistories_IdentityUserId",
+                table: "WordHistories",
+                column: "IdentityUserId");
         }
 
         /// <inheritdoc />
@@ -313,13 +341,16 @@ namespace AbbContentEditor.Migrations
                 name: "Countdowns");
 
             migrationBuilder.DropTable(
+                name: "WordHistories");
+
+            migrationBuilder.DropTable(
                 name: "Abb_Roles");
 
             migrationBuilder.DropTable(
-                name: "Abb_Users");
+                name: "Categories");
 
             migrationBuilder.DropTable(
-                name: "Categories");
+                name: "Abb_Users");
         }
     }
 }

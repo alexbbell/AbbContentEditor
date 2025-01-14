@@ -3,12 +3,10 @@ using AbbContentEditor.Helpers;
 using AbbContentEditor.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
@@ -36,6 +34,7 @@ namespace AbbContentEditor.Controllers
             _tokenManager = tokenManager;
             _abbAppContext = abbAppContext;
         }
+
         [HttpPost]
         [AllowAnonymous]
         [Route("RegisterUser")]
@@ -74,6 +73,35 @@ namespace AbbContentEditor.Controllers
         }
 
 
+
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return NotFound($"Unable to load user with email '{email}'.");
+            }
+            SendEmailRegistration(user, "https://alexey.beliaeff.ru");
+            var userId = await _userManager.GetUserIdAsync(user);
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            return Ok();
+        }
+
+        private async void SendEmailRegistration (IdentityUser user, string? returnUrl)
+        {
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            var EmailConfirmationUrl = Url.Page(
+                "/Account/ConfirmEmail",
+                pageHandler: null,
+                values: new { area = "Identity", userId = user.Id, code = code, returnUrl = returnUrl },
+                protocol: Request.Scheme);
+
+        }
 
         [HttpPost]
         [Route("Login")]

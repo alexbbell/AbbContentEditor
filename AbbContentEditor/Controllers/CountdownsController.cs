@@ -31,6 +31,7 @@ namespace AbbContentEditor.Controllers
         public async Task<ActionResult<DateTime>> GetCountdown(string username)
         {
             var user = _context.Users.FirstOrDefault(u => u.UserName.Equals(username));
+            
             if (user == null)
             {
                 _logger.LogError($"Non existing user {user}");

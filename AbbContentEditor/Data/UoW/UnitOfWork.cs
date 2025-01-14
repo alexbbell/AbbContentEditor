@@ -9,6 +9,7 @@ namespace AbbContentEditor.Data.UoW
         public BlogRepository blogRepository { get; set; }
         public Repository<Category> categoryRepository {  get; set; }
         public Repository<BankOperation> bankOperationRepository {  get; set; }
+        public Repository<WordHistory> wordHistoryRepository { get; set; }
 
         public UnitOfWork(AbbAppContext context)
         {
@@ -16,6 +17,7 @@ namespace AbbContentEditor.Data.UoW
             blogRepository  = new BlogRepository(_context);
             categoryRepository = new Repository<Category>(_context);
             bankOperationRepository  = new Repository<BankOperation>(_context);
+            wordHistoryRepository = new Repository<WordHistory>(_context);
         }
 
         public Repository<Blog> BlogRepository
