@@ -76,6 +76,28 @@ namespace AbbContentEditor.Data.Repositories
         {
             _dbSet.Remove(entity);
         }
+
+        //Delete entities by Clause
+        public async Task<int> DeleteAsync(Func<IQueryable<T>, IQueryable<T>> filter = null)
+        {
+            if (filter == null)
+                throw new ArgumentNullException(nameof(filter), "Filter cannot be null");
+
+            var queryable = filter(_dbSet);
+
+            if (queryable == null)
+                throw new InvalidOperationException("The filter function returned null.");
+
+            var entitiesToDelete = await queryable.ToListAsync();
+
+            if (!entitiesToDelete.Any()) return 0;
+                
+            _dbSet.RemoveRange(entitiesToDelete);
+            return entitiesToDelete.Count;
+            //await _context.SaveChangesAsync();
+        }
+
+
     }
 
 }

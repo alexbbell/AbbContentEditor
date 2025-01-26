@@ -1,5 +1,6 @@
 ﻿using AbbContentEditor.Data.Repositories;
 using AbbContentEditor.Models;
+using AbbContentEditor.Models.Words;
 
 namespace AbbContentEditor.Data.UoW
 {

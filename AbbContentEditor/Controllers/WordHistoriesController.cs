@@ -6,10 +6,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AbbContentEditor.Data;
-using AbbContentEditor.Models;
 using AbbContentEditor.Data.Repositories;
 using AbbContentEditor.Data.UoW;
 using AutoMapper;
+using AbbContentEditor.Migrations;
+using NuGet.Protocol.Core.Types;
+using AbbContentEditor.Models.Words;
 
 namespace AbbContentEditor.Controllers
 {
@@ -21,64 +23,73 @@ namespace AbbContentEditor.Controllers
         private readonly IRepository<WordHistory> _wordHistoryRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILogger<WordHistoriesController> _logger;
 
-        public WordHistoriesController(IRepository<WordHistory> wordHistoryRepository, IUnitOfWork unitOfWork, IMapper mapper)
+        public WordHistoriesController(IRepository<WordHistory> wordHistoryRepository, IUnitOfWork unitOfWork, IMapper mapper, ILogger<WordHistoriesController> logger)
         {
             _wordHistoryRepository= wordHistoryRepository;
             _unitOfWork = unitOfWork;
             _mapper= mapper;
+            _logger = logger;
         }
 
         // GET: api/WordHistories
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<WordHistory>>> GetWordHistories()
+        public async Task<ActionResult<IEnumerable<WordHistoryDto>>> GetWordHistories()
         {
-            
-            return Ok(_wordHistoryRepository.Find(x=>x.Where(x=>x.IdentityUserId == "1417a9c3-6e33-43c2-a02a-d692c8e0d335")));
+
+            string tempUserId = "e3326c3b-e8a3-481e-ad52-56a787695738";
+            string tempUserId2 = "1417a9c3-6e33-43c2-a02a-d692c8e0d335";
+
+            return Ok(_wordHistoryRepository.Find(x=>x.Where(x=>x.IdentityUserId == tempUserId)));
         }
 
         // GET: api/WordHistories/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<WordHistory>> GetWordHistory(int id)
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<IEnumerable<WordHistory>>> GetWordHistory(string userId)
         {
-            var wordHistory = await _wordHistoryRepository.GetByIdAsync(id);
-            if (wordHistory == null)
+            var result = _wordHistoryRepository.Find(x => x.Where(x => x.IdentityUserId == userId));
+            if (result == null)
             {
                 return NotFound();
             }
 
-            return wordHistory;
+            return Ok(result);
         }
 
         // PUT: api/WordHistories/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutWordHistory(int id, WordHistory wordHistory)
+        public async Task<IActionResult> PutWordHistory(int id, WordHistoryDto wordHistoryDto)
         {
-            if (id != wordHistory.Id)
+            if (id != wordHistoryDto.Id)
             {
                 return BadRequest();
             }
+            var wh = _mapper.Map<WordHistoryDto, WordHistory>(wordHistoryDto);
+            await _unitOfWork.wordHistoryRepository.UpdateAsync(wh);
+
+
 
             //_context.Entry(wordHistory).State = EntityState.Modified;
 
-            //try
-            //{
-            //    await _context.SaveChangesAsync();
-            //}
-            //catch (DbUpdateConcurrencyException)
-            //{
-            //    if (!WordHistoryExists(id))
-            //    {
-            //        return NotFound();
-            //    }
-            //    else
-            //    {
-            //        throw;
-            //    }
-            //}
+            try
+            {
+                await _unitOfWork.Commit();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!WordHistoryExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
-            return NoContent();
+            return Ok(wh);
         }
 
         // POST: api/WordHistories
@@ -103,9 +114,25 @@ namespace AbbContentEditor.Controllers
         }
 
         // DELETE: api/WordHistories/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteWordHistory(int id)
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> DeleteWordHistory(string userId)
         {
+            //var items = _wordHistoryRepository.Find(x => x.Where(x => x.IdentityUserId == userId));
+
+            int deletedCount = await _unitOfWork.wordHistoryRepository.DeleteAsync(x => x.Where(x => x.IdentityUserId == userId));
+            try
+            {
+                await _unitOfWork.Commit();
+                Console.WriteLine($"deletedCount: {deletedCount}");
+                return Ok(deletedCount);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Error : {ex.Message.ToString()}");
+                _logger.LogError($"Delete WordHistory error: {ex.Message}");
+                return BadRequest(ex.Message );
+            }
+
             //var wordHistory = await _context.WordHistories.FindAsync(id);
             //if (wordHistory == null)
             //{
@@ -114,8 +141,7 @@ namespace AbbContentEditor.Controllers
 
             //_context.WordHistories.Remove(wordHistory);
             //await _context.SaveChangesAsync();
-            throw new NotImplementedException();
-            return NoContent();
+
         }
 
         private bool WordHistoryExists(int id)

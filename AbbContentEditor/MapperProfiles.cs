@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AbbContentEditor.Models;
+using AbbContentEditor.Models.Words;
 
 namespace AbbContentEditor
 {

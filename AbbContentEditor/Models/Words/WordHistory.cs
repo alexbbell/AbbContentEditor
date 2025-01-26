@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace AbbContentEditor.Models
+namespace AbbContentEditor.Models.Words
 {
     public class WordHistory
     {
         public int Id { get; set; }
         public string Word { get; set; }
-        public Boolean Correct { get; set; }
+        public bool Correct { get; set; }
 
         public IdentityUser? IdentityUser { get; set; }
-        public string IdentityUserId  { get; set; }
+        public string IdentityUserId { get; set; }
 
         public DateTime AnswerTime { get; set; }
     }
@@ -18,7 +18,7 @@ namespace AbbContentEditor.Models
     {
         public int Id { get; set; }
         public string Word { get; set; }
-        public Boolean Correct { get; set; }
+        public bool Correct { get; set; }
 
         public string IdentityUserId { get; set; }
 
