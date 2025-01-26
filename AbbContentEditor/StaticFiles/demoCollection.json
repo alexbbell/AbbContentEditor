@@ -1,0 +1,502 @@
+[
+  {
+    "id": 1,
+    "translate1": "Spiegel",
+    "translate2": "Зеркало"
+  },
+  {
+    "id": 2,
+    "translate1": "Sinnlos",
+    "translate2": "Бессмысленный"
+  },
+  {
+    "id": 3,
+    "translate1": "Außerlich",
+    "translate2": "Внешний"
+  },
+  {
+    "id": 4,
+    "translate1": "Ähnlich",
+    "translate2": "Похожий"
+  },
+  {
+    "id": 5,
+    "translate1": "Bestellen",
+    "translate2": "Заказывать"
+  },
+  {
+    "id": 6,
+    "translate1": "Erinnern",
+    "translate2": "Вспоминать"
+  },
+  {
+    "id": 7,
+    "translate1": "Gefährlich",
+    "translate2": "Опасный"
+  },
+  {
+    "id": 8,
+    "translate1": "Geschenk",
+    "translate2": "Подарок"
+  },
+  {
+    "id": 9,
+    "translate1": "Hoffentlich",
+    "translate2": "Надеюсь"
+  },
+  {
+    "id": 10,
+    "translate1": "Kleidung",
+    "translate2": "Одежда"
+  },
+  {
+    "id": 11,
+    "translate1": "Lächeln",
+    "translate2": "Улыбка"
+  },
+  {
+    "id": 12,
+    "translate1": "Leicht",
+    "translate2": "Легкий"
+  },
+  {
+    "id": 13,
+    "translate1": "Lernen",
+    "translate2": "Учить"
+  },
+  {
+    "id": 14,
+    "translate1": "Möglich",
+    "translate2": "Возможно"
+  },
+  {
+    "id": 15,
+    "translate1": "Nachbar",
+    "translate2": "Сосед"
+  },
+  {
+    "id": 16,
+    "translate1": "Nützlich",
+    "translate2": "Полезный"
+  },
+  {
+    "id": 17,
+    "translate1": "Öffentlich",
+    "translate2": "Публичный"
+  },
+  {
+    "id": 18,
+    "translate1": "Planen",
+    "translate2": "Планировать"
+  },
+  {
+    "id": 19,
+    "translate1": "Reise",
+    "translate2": "Путешествие"
+  },
+  {
+    "id": 20,
+    "translate1": "Sicher",
+    "translate2": "Безопасный"
+  },
+  {
+    "id": 21,
+    "translate1": "Träumen",
+    "translate2": "Мечтать"
+  },
+  {
+    "id": 22,
+    "translate1": "Vermissen",
+    "translate2": "Скучать"
+  },
+  {
+    "id": 23,
+    "translate1": "Verstehen",
+    "translate2": "Понимать"
+  },
+  {
+    "id": 24,
+    "translate1": "Wichtig",
+    "translate2": "Важный"
+  },
+  {
+    "id": 25,
+    "translate1": "Zeitung",
+    "translate2": "Газета"
+  },
+  {
+    "id": 26,
+    "translate1": "Zufrieden",
+    "translate2": "Довольный"
+  },
+  {
+    "id": 27,
+    "translate1": "Zuhören",
+    "translate2": "Слушать"
+  },
+  {
+    "id": 28,
+    "translate1": "Üben",
+    "translate2": "Практиковаться"
+  },
+  {
+    "id": 29,
+    "translate1": "Abholen",
+    "translate2": "Забирать"
+  },
+  {
+    "id": 30,
+    "translate1": "Antworten",
+    "translate2": "Отвечать"
+  },
+  {
+    "id": 31,
+    "translate1": "Aufstehen",
+    "translate2": "Вставать"
+  },
+  {
+    "id": 32,
+    "translate1": "Begleiten",
+    "translate2": "Сопровождать"
+  },
+  {
+    "id": 33,
+    "translate1": "Besonders",
+    "translate2": "Особенный"
+  },
+  {
+    "id": 34,
+    "translate1": "Bewerben",
+    "translate2": "Подавать заявку"
+  },
+  {
+    "id": 35,
+    "translate1": "Decken",
+    "translate2": "Накрывать"
+  },
+  {
+    "id": 36,
+    "translate1": "Einladen",
+    "translate2": "Приглашать"
+  },
+  {
+    "id": 37,
+    "translate1": "Empfehlen",
+    "translate2": "Рекомендовать"
+  },
+  {
+    "id": 38,
+    "translate1": "Entdecken",
+    "translate2": "Открывать"
+  },
+  {
+    "id": 39,
+    "translate1": "Erklären",
+    "translate2": "Объяснять"
+  },
+  {
+    "id": 40,
+    "translate1": "Erleben",
+    "translate2": "Испытывать"
+  },
+  {
+    "id": 41,
+    "translate1": "Erreichen",
+    "translate2": "Достигать"
+  },
+  {
+    "id": 42,
+    "translate1": "Erziehen",
+    "translate2": "Воспитывать"
+  },
+  {
+    "id": 43,
+    "translate1": "Feiern",
+    "translate2": "Праздновать"
+  },
+  {
+    "id": 44,
+    "translate1": "Gefühl",
+    "translate2": "Чувство"
+  },
+  {
+    "id": 45,
+    "translate1": "Genießen",
+    "translate2": "Наслаждаться"
+  },
+  {
+    "id": 46,
+    "translate1": "Hoffen",
+    "translate2": "Надеяться"
+  },
+  {
+    "id": 47,
+    "translate1": "Kennenlernen",
+    "translate2": "Познакомиться"
+  },
+  {
+    "id": 48,
+    "translate1": "Kümmern",
+    "translate2": "Заботиться"
+  },
+  {
+    "id": 49,
+    "translate1": "Loben",
+    "translate2": "Хвалить"
+  },
+  {
+    "id": 50,
+    "translate1": "Melden",
+    "translate2": "Сообщать"
+  },
+  {
+    "id": 51,
+    "translate1": "Mitbringen",
+    "translate2": "Приводить с собой"
+  },
+  {
+    "id": 52,
+    "translate1": "Nachdenken",
+    "translate2": "Размышлять"
+  },
+  {
+    "id": 53,
+    "translate1": "Reden",
+    "translate2": "Разговаривать"
+  },
+  {
+    "id": 54,
+    "translate1": "Sammeln",
+    "translate2": "Собирать"
+  },
+  {
+    "id": 55,
+    "translate1": "Schaffen",
+    "translate2": "Справляться"
+  },
+  {
+    "id": 56,
+    "translate1": "Sparen",
+    "translate2": "Экономить"
+  },
+  {
+    "id": 57,
+    "translate1": "Steigen",
+    "translate2": "Подниматься"
+  },
+  {
+    "id": 58,
+    "translate1": "Teilen",
+    "translate2": "Делиться"
+  },
+  {
+    "id": 59,
+    "translate1": "Treffen",
+    "translate2": "Встречаться"
+  },
+  {
+    "id": 60,
+    "translate1": "Untersuchen",
+    "translate2": "Исследовать"
+  },
+  {
+    "id": 61,
+    "translate1": "Verantwortung",
+    "translate2": "Ответственность"
+  },
+  {
+    "id": 62,
+    "translate1": "Verändern",
+    "translate2": "Изменять"
+  },
+  {
+    "id": 63,
+    "translate1": "Vermeiden",
+    "translate2": "Избегать"
+  },
+  {
+    "id": 64,
+    "translate1": "Verschwinden",
+    "translate2": "Исчезать"
+  },
+  {
+    "id": 65,
+    "translate1": "Versprechen",
+    "translate2": "Обещать"
+  },
+  {
+    "id": 66,
+    "translate1": "Versuchen",
+    "translate2": "Пытаться"
+  },
+  {
+    "id": 67,
+    "translate1": "Vorbereiten",
+    "translate2": "Готовиться"
+  },
+  {
+    "id": 68,
+    "translate1": "Vorstellen",
+    "translate2": "Представлять"
+  },
+  {
+    "id": 69,
+    "translate1": "Wählen",
+    "translate2": "Выбирать"
+  },
+  {
+    "id": 70,
+    "translate1": "Ziehen",
+    "translate2": "Тянуть"
+  },
+  {
+    "id": 71,
+    "translate1": "Beziehung",
+    "translate2": "Отношение"
+  },
+  {
+    "id": 72,
+    "translate1": "Besonderheit",
+    "translate2": "Особенность"
+  },
+  {
+    "id": 73,
+    "translate1": "Diskutieren",
+    "translate2": "Обсуждать"
+  },
+  {
+    "id": 74,
+    "translate1": "Erleichtern",
+    "translate2": "Облегчать"
+  },
+  {
+    "id": 75,
+    "translate1": "Erlauben",
+    "translate2": "Разрешать"
+  },
+  {
+    "id": 76,
+    "translate1": "Fliegen",
+    "translate2": "Лететь"
+  },
+  {
+    "id": 77,
+    "translate1": "Halten",
+    "translate2": "Держать"
+  },
+  {
+    "id": 78,
+    "translate1": "Heiraten",
+    "translate2": "Жениться"
+  },
+  {
+    "id": 79,
+    "translate1": "Hoffnung",
+    "translate2": "Надежда"
+  },
+  {
+    "id": 80,
+    "translate1": "Kommen",
+    "translate2": "Приходить"
+  },
+  {
+    "id": 81,
+    "translate1": "Laufen",
+    "translate2": "Бегать"
+  },
+  {
+    "id": 82,
+    "translate1": "Legen",
+    "translate2": "Класть"
+  },
+  {
+    "id": 83,
+    "translate1": "Nachfrage",
+    "translate2": "Спрос"
+  },
+  {
+    "id": 84,
+    "translate1": "Ordnen",
+    "translate2": "Упорядочивать"
+  },
+  {
+    "id": 85,
+    "translate1": "Reagieren",
+    "translate2": "Реагировать"
+  },
+  {
+    "id": 86,
+    "translate1": "Schreiben",
+    "translate2": "Писать"
+  },
+  {
+    "id": 87,
+    "translate1": "Sitzen",
+    "translate2": "Сидеть"
+  },
+  {
+    "id": 88,
+    "translate1": "Spielen",
+    "translate2": "Играть"
+  },
+  {
+    "id": 89,
+    "translate1": "Sprechen",
+    "translate2": "Говорить"
+  },
+  {
+    "id": 90,
+    "translate1": "Tanzen",
+    "translate2": "Танцевать"
+  },
+  {
+    "id": 91,
+    "translate1": "Überzeugen",
+    "translate2": "Убеждать"
+  },
+  {
+    "id": 92,
+    "translate1": "Vergleichen",
+    "translate2": "Сравнивать"
+  },
+  {
+    "id": 93,
+    "translate1": "Versichern",
+    "translate2": "Застраховать"
+  },
+  {
+    "id": 94,
+    "translate1": "Verzeihen",
+    "translate2": "Прощать"
+  },
+  {
+    "id": 95,
+    "translate1": "Vorhaben",
+    "translate2": "Задумать"
+  },
+  {
+    "id": 96,
+    "translate1": "Wachsen",
+    "translate2": "Расти"
+  },
+  {
+    "id": 97,
+    "translate1": "Weinen",
+    "translate2": "Плакать"
+  },
+  {
+    "id": 98,
+    "translate1": "Wohnen",
+    "translate2": "Жить"
+  },
+  {
+    "id": 99,
+    "translate1": "Zählen",
+    "translate2": "Считать"
+  },
+  {
+    "id": 100,
+    "translate1": "Zuhause",
+    "translate2": "Дом"
+  }
+]

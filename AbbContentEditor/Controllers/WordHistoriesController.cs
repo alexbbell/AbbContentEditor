@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using AbbContentEditor.Data.Repositories;
+using AbbContentEditor.Data.UoW;
+using AbbContentEditor.Models.Words;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using AbbContentEditor.Data;
-using AbbContentEditor.Data.Repositories;
-using AbbContentEditor.Data.UoW;
-using AutoMapper;
-using AbbContentEditor.Migrations;
-using NuGet.Protocol.Core.Types;
-using AbbContentEditor.Models.Words;
 
 namespace AbbContentEditor.Controllers
 {

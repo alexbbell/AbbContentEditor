@@ -15,7 +15,9 @@ namespace AbbContentEditor.Data
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Blog> Blogs { get; set; }
         public virtual DbSet<BankOperation> BankOperations { get; set; }
+
         public virtual DbSet<Countdown> Countdowns { get; set; }
+        public virtual DbSet<WordCollection> WordCollections { get; set; }
         public virtual DbSet<WordHistory> WordHistories { get; set; }
 
         //public AbbAppContext(IConfiguration configuration) : base()

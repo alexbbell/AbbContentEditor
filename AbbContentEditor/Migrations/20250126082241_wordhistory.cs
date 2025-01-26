@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -203,6 +204,29 @@ namespace AbbContentEditor.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WordCollections",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    WordsCollection = table.Column<JsonDocument>(type: "jsonb", nullable: false),
+                    AuthorId = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    PubDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WordCollections", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WordCollections_Abb_Users_AuthorId",
+                        column: x => x.AuthorId,
+                        principalTable: "Abb_Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WordHistories",
                 columns: table => new
                 {
@@ -211,7 +235,6 @@ namespace AbbContentEditor.Migrations
                     Word = table.Column<string>(type: "text", nullable: false),
                     Correct = table.Column<bool>(type: "boolean", nullable: false),
                     IdentityUserId = table.Column<string>(type: "text", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: false),
                     AnswerTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
@@ -263,7 +286,7 @@ namespace AbbContentEditor.Migrations
             migrationBuilder.InsertData(
                 table: "Blogs",
                 columns: new[] { "Id", "CategoryId", "ImageUrl", "IsDeleted", "Preview", "PubDate", "TheText", "Title", "UpdDate" },
-                values: new object[] { 1, 1, "imageUrl", false, "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…", null, "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.", "My first blog post from dbcontext migration", new DateTime(2025, 1, 12, 17, 35, 0, 460, DateTimeKind.Utc).AddTicks(5055) });
+                values: new object[] { 1, 1, "imageUrl", false, "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…", null, "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.", "My first blog post from dbcontext migration", new DateTime(2025, 1, 26, 8, 22, 39, 770, DateTimeKind.Utc).AddTicks(4190) });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Abb_RoleClaims_RoleId",
@@ -308,6 +331,11 @@ namespace AbbContentEditor.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_WordCollections_AuthorId",
+                table: "WordCollections",
+                column: "AuthorId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WordHistories_IdentityUserId",
                 table: "WordHistories",
                 column: "IdentityUserId");
@@ -339,6 +367,9 @@ namespace AbbContentEditor.Migrations
 
             migrationBuilder.DropTable(
                 name: "Countdowns");
+
+            migrationBuilder.DropTable(
+                name: "WordCollections");
 
             migrationBuilder.DropTable(
                 name: "WordHistories");
