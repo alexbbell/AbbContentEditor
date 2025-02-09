@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using SQLitePCL;
+
 
 namespace AbbContentEditor.Data
 {
@@ -10,6 +11,7 @@ namespace AbbContentEditor.Data
         public CreateDefaultData(AbbAppContext context)
         {
             _context = context;
+            Batteries.Init();
             var iUser = context.Users.FirstOrDefault(u => u.UserName.Equals("alexey@beliaeff.ru"));
             if (iUser == null ) {
                 CreateDefaultUser();

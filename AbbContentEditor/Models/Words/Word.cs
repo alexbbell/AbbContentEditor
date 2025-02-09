@@ -15,7 +15,15 @@ namespace AbbContentEditor.Models.Words
     public class WordCollection : BaseClass 
     {
         public int Id { get; set; }
-        public JsonDocument WordsCollection { get; set; }
+
+        public JsonDocument? WordsCollection
+        {
+            get => WordsCollectionString is null ? null : JsonDocument.Parse(WordsCollectionString);
+            set => WordsCollectionString = value?.RootElement.GetRawText();
+        }
+
+        private string? WordsCollectionString { get; set; }
+        // public JsonDocument WordsCollection { get; set; }
         public IdentityUser Author { get; set; }
     }
 

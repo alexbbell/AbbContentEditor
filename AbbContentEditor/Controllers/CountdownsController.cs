@@ -97,13 +97,13 @@ namespace AbbContentEditor.Controllers
             if (existedCountdown == null)
             {
                 existedCountdown = new Countdown { Id = new Guid(user.Id), Name = username, CreatedAt = DateTime.UtcNow, 
-                    EndTime = (data.Action == "start") ? DateTime.UtcNow.AddMinutes(20) : DateTime.MinValue
+                    EndTime = (data.Action == "start") ? DateTime.UtcNow.AddSeconds(10) : DateTime.MinValue
                 };
                 _context.Countdowns.Add(existedCountdown );
             }
             else
             {
-                existedCountdown.EndTime = (data.Action == "start") ? DateTime.UtcNow.AddMinutes(20) : DateTime.MinValue;
+                existedCountdown.EndTime = (data.Action == "start") ? DateTime.UtcNow.AddSeconds(10) : DateTime.MinValue;
                 _context.Countdowns.Update(existedCountdown);
             }
             await _context.SaveChangesAsync();

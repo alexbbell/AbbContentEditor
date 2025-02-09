@@ -3,6 +3,8 @@ using AbbContentEditor.Models.Words;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
+using System.Xml;
 
 namespace AbbContentEditor.Data
 {
@@ -26,7 +28,26 @@ namespace AbbContentEditor.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
             base.OnModelCreating(modelBuilder);
+            if (Database.IsSqlite())
+            {
+                // SQLite does not support JsonDocument, so use a string column
+                modelBuilder.Entity<WordCollection>()
+                    .Property<string>("WordsCollectionString");
+
+
+                modelBuilder.Entity<WordCollection>()
+                    .Ignore(e => e.WordsCollection);                
+                
+            }
+            else
+            {
+                // PostgreSQL supports JsonDocument natively
+                modelBuilder.Entity<WordCollection>()
+                    .Property(e => e.WordsCollection)
+                    .HasColumnType("jsonb");
+            }
             // Override default AspNet Identity table names
             string prefix = "Abb_";
             modelBuilder.Entity<IdentityUser>(entity => { entity.ToTable(name: $"{prefix}Users"); });

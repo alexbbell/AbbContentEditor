@@ -35,12 +35,15 @@ try
     builder.Logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
     builder.Host.UseNLog();
 
-    var connStr = builder.Configuration.GetConnectionString("PGSQLConnectionString");
+    //var connStr = builder.Configuration.GetConnectionString("PGSQLConnectionString");
+    string connStr = builder.Configuration.GetConnectionString("SQLiteConnectionString"); 
 
-    
+
+
     builder.Services.AddDbContext<AbbAppContext>(options =>
     {
-        options.UseNpgsql(connStr);
+        options.UseSqlite(connStr);
+        // options.UseNpgsql(connStr);
         //options.UseNpgsql(connStr, npgsqlOptions =>
         //{
         //    npgsqlOptions.EnableRetryOnFailure(
