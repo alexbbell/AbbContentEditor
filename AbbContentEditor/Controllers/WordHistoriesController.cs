@@ -33,7 +33,8 @@ namespace AbbContentEditor.Controllers
             string tempUserId = "e3326c3b-e8a3-481e-ad52-56a787695738";
             string tempUserId2 = "1417a9c3-6e33-43c2-a02a-d692c8e0d335";
 
-            return Ok(_wordHistoryRepository.Find(x=>x.Where(x=>x.IdentityUserId == tempUserId)));
+            //return Ok(_wordHistoryRepository.Find(x=>x.Where(x=>x.IdentityUserId == tempUserId)));
+            return Ok(_wordHistoryRepository.GetAll().FirstOrDefault());
         }
 
         // GET: api/WordHistories/5
