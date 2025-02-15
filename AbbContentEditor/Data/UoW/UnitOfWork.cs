@@ -12,8 +12,9 @@ namespace AbbContentEditor.Data.UoW
         public Repository<BankOperation> bankOperationRepository {  get; set; }
         public Repository<WordHistory> wordHistoryRepository { get; set; }
         public Repository<WordCollection> wordCollectionRepository { get; set; }
+        public ILogger<IUnitOfWork> _logger {  get; set; }
 
-        public UnitOfWork(AbbAppContext context)
+        public UnitOfWork(AbbAppContext context, ILogger<IUnitOfWork> logger)
         {
             _context = context;
             blogRepository  = new BlogRepository(_context);
@@ -21,6 +22,7 @@ namespace AbbContentEditor.Data.UoW
             bankOperationRepository  = new Repository<BankOperation>(_context);
             wordHistoryRepository = new Repository<WordHistory>(_context);
             wordCollectionRepository = new Repository<WordCollection>(_context);
+            _logger = logger;
         }
 
         public Repository<Blog> BlogRepository
@@ -44,6 +46,7 @@ namespace AbbContentEditor.Data.UoW
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
+                _logger.LogError($"Error on save {ex}");
             }
             // var success = (await _context.SaveChangesAsync()) > 0;
             // Possibility to dispatch domain events, etc

@@ -2,8 +2,10 @@
 using AbbContentEditor.Data.UoW;
 using AbbContentEditor.Models.Words;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace AbbContentEditor.Controllers
 {
@@ -16,14 +18,17 @@ namespace AbbContentEditor.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<WordHistoriesController> _logger;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public WordHistoriesController(IRepository<WordHistory> wordHistoryRepository, IUnitOfWork unitOfWork, IMapper mapper, ILogger<WordHistoriesController> logger)
+        public WordHistoriesController(IRepository<WordHistory> wordHistoryRepository, 
+            IUnitOfWork unitOfWork, IMapper mapper, ILogger<WordHistoriesController> logger, UserManager<IdentityUser> userManager)
         {
             _wordHistoryRepository= wordHistoryRepository;
             _unitOfWork = unitOfWork;
             _mapper= mapper;
             _logger = logger;
-        }
+            _userManager = userManager;
+    }
 
         // GET: api/WordHistories
         [HttpGet]
@@ -31,10 +36,17 @@ namespace AbbContentEditor.Controllers
         {
 
             string tempUserId = "e3326c3b-e8a3-481e-ad52-56a787695738";
-            string tempUserId2 = "1417a9c3-6e33-43c2-a02a-d692c8e0d335";
+            string tempUserId2 = "48c1bfc6-1bbb-4618-a87b-c40378cc31af";
+            string email = "alexey@beliaeff.ru";
+            var user = await _userManager.FindByIdAsync(tempUserId2);
+            //var user = await _userManager.FindByEmailAsync(email.ToLower());
+            var userId = user.Id;
 
-            //return Ok(_wordHistoryRepository.Find(x=>x.Where(x=>x.IdentityUserId == tempUserId)));
-            return Ok(_wordHistoryRepository.GetAll().FirstOrDefault());
+            _logger.LogInformation($"User is {userId}");
+            List<WordHistory> history = _wordHistoryRepository.Find(x => x.Where(x => x.IdentityUserId == userId)).ToList();
+            List<WordHistoryDto> historyDto = _mapper.Map< List < WordHistory > , List <WordHistoryDto>>(history);
+            return Ok(historyDto);
+            //return Ok(_wordHistoryRepository.Find());
         }
 
         // GET: api/WordHistories/5

@@ -5,6 +5,7 @@ using AbbContentEditor.Models.Words;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace AbbContentEditor.Controllers
 {
@@ -33,8 +34,12 @@ namespace AbbContentEditor.Controllers
         public IActionResult Index()
         {
             string t = "b50bb495-4928-483a-b3b4-11afbe5e7b34";
-            var r = _unitOfWork.wordCollectionRepository.Find(x => x.Where(x => x.Author.Id == t));;            
-            return Ok(JsonSerializer.Serialize(r));
+            //var r = _unitOfWork.wordCollectionRepository.Find(x => x.Where(x => x.Author.Id == t));;            
+            var r = _unitOfWork.wordCollectionRepository.GetAll().FirstOrDefault();// Find(x => x.Where(x => x.Author.Id == t)); ;
+            string strResult = JsonSerializer.Serialize(r);
+            string decodedText = Regex.Unescape(strResult);
+
+            return Ok(decodedText);
         }
 
         [HttpGet]
