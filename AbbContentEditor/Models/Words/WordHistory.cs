@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Text.Json.Serialization;
 
 namespace AbbContentEditor.Models.Words
 {
@@ -7,8 +8,9 @@ namespace AbbContentEditor.Models.Words
         public int Id { get; set; }
         public string Word { get; set; }
         public bool Correct { get; set; }
-
+        [JsonIgnore]
         public IdentityUser? IdentityUser { get; set; }
+        [JsonIgnore]
         public string IdentityUserId { get; set; }
 
         public DateTime AnswerTime { get; set; }
@@ -17,10 +19,8 @@ namespace AbbContentEditor.Models.Words
     public class WordHistoryDto
     {
         public int Id { get; set; }
-        public string Word { get; set; }
+        public string? Word { get; set; }
         public bool Correct { get; set; }
-
-        public string IdentityUserId { get; set; }
 
         public DateTime AnswerTime { get; set; }
     }

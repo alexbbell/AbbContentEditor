@@ -47,7 +47,7 @@ namespace AbbContentEditor.Controllers
 
         private async Task<bool> PopulateWordHistory()
         {
-            string filePath = @"D:\Projects\AbbContentEditor\AbbContentEditor\StaticFiles\demoCollection.json";
+            string filePath = @"C:\Projects\AbbContentEditor\AbbContentEditor\StaticFiles\demoCollection.json";
             // Read the JSON file
             string jsonContent = System.IO.File.ReadAllText(filePath);
             List<Word> words = JsonSerializer.Deserialize<List<Word>>(jsonContent);
@@ -61,9 +61,15 @@ namespace AbbContentEditor.Controllers
             wc.PubDate = DateTime.UtcNow;
             wc.UpdDate = DateTime.UtcNow;
             wc.WordsCollection = JsonDocument.Parse(jsonContent);
-
-            await _unitOfWork.wordCollectionRepository.AddAsync(wc);
-            await _unitOfWork.Commit();
+            try
+            {
+                await _unitOfWork.wordCollectionRepository.AddAsync(wc);
+                await _unitOfWork.Commit();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"Words were not added, {ex.Message}");
+            }
             return true;
         }
     }

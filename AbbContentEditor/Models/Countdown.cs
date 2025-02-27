@@ -3,6 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AbbContentEditor.Models
 {
+    public enum CountDownAction
+    {
+        Start,
+        End
+    }
     public class Countdown
     {
         [Key]
@@ -14,7 +19,7 @@ namespace AbbContentEditor.Models
     }
     public class CountDownRequest
     {
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
         public string Action { get; set; }
     }
 }

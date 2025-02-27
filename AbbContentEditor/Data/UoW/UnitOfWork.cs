@@ -7,6 +7,8 @@ namespace AbbContentEditor.Data.UoW
     public class UnitOfWork :  IUnitOfWork 
     {
         private readonly AbbAppContext _context;
+        private AbbAppContext mockContext;
+
         public BlogRepository blogRepository { get; set; }
         public Repository<Category> categoryRepository {  get; set; }
         public Repository<BankOperation> bankOperationRepository {  get; set; }
@@ -23,6 +25,11 @@ namespace AbbContentEditor.Data.UoW
             wordHistoryRepository = new Repository<WordHistory>(_context);
             wordCollectionRepository = new Repository<WordCollection>(_context);
             _logger = logger;
+        }
+
+        public UnitOfWork(AbbAppContext mockContext)
+        {
+            this.mockContext = mockContext;
         }
 
         public Repository<Blog> BlogRepository

@@ -1,8 +1,11 @@
 ﻿using AbbContentEditor.Data;
 using AbbContentEditor.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace AbbContentEditor.Controllers
 {
@@ -12,14 +15,18 @@ namespace AbbContentEditor.Controllers
     {
         private readonly AbbAppContext _context;
         private ILogger<Countdown> _logger;
-
-        public CountdownsController(AbbAppContext context, ILogger<Countdown> logger)
+        private readonly IConfiguration _configuration;
+        private readonly UserManager<IdentityUser> _userManager;
+        public CountdownsController(AbbAppContext context, ILogger<Countdown> logger, IConfiguration configuration, UserManager<IdentityUser> userManager)
         {
             _context = context;
             _logger = logger;
+            _configuration = configuration;
+            _userManager = userManager;
         }
 
-        // GET: api/Countdowns
+
+         // GET: api/Countdowns
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Countdown>>> GetCountdowns()
         {
@@ -28,7 +35,7 @@ namespace AbbContentEditor.Controllers
 
         // GET: api/Countdowns/5
         [HttpGet("{username}")]
-        public async Task<ActionResult<DateTime>> GetCountdown(string username)
+        public async Task<ActionResult<DateTime>> GetCountdown( string username)
         {
             var user = _context.Users.FirstOrDefault(u => u.UserName.Equals(username));
             
@@ -87,23 +94,32 @@ namespace AbbContentEditor.Controllers
         // POST: api/Countdowns
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<Countdown>> PostCountdown([FromBody]  CountDownRequest data)
         {
-            var username = data.UserName;
-            var user = _context.Users.FirstOrDefault(u => u.UserName.Equals(username));
-            if(user == null)  return BadRequest();
+            // var username = data.UserName;
+            IdentityUser? username = await _userManager.FindByNameAsync(userName: User.Identity.Name);
+            if(username == null)  return BadRequest();
+            string countDownSecondsStr = _configuration.GetSection("GameSettings:CountDownSeconds").Value??"1000";
 
-            var existedCountdown = _context.Countdowns.FirstOrDefault(x=>x.Id == new Guid(user.Id));
+            if (!int.TryParse(countDownSecondsStr, out int seconds))
+            {
+                seconds = 1000; // Default value in case of parsing failure
+            }
+
+            
+            var existedCountdown = _context.Countdowns.FirstOrDefault(x=>x.Id == new Guid(username.Id));
             if (existedCountdown == null)
             {
-                existedCountdown = new Countdown { Id = new Guid(user.Id), Name = username, CreatedAt = DateTime.UtcNow, 
-                    EndTime = (data.Action == "start") ? DateTime.UtcNow.AddSeconds(10) : DateTime.MinValue
+                existedCountdown = new Countdown { Id = new Guid(username.Id), Name = username.UserName, CreatedAt = DateTime.UtcNow, 
+                    EndTime = data.Action.Equals(CountDownAction.Start.ToString(), StringComparison.InvariantCultureIgnoreCase) ? DateTime.UtcNow.AddSeconds(seconds) : DateTime.MinValue
                 };
                 _context.Countdowns.Add(existedCountdown );
             }
             else
             {
-                existedCountdown.EndTime = (data.Action == "start") ? DateTime.UtcNow.AddSeconds(10) : DateTime.MinValue;
+
+                existedCountdown.EndTime = data.Action.Equals(CountDownAction.Start.ToString(), StringComparison.InvariantCultureIgnoreCase) ? DateTime.UtcNow.AddSeconds(seconds) : DateTime.MinValue;
                 _context.Countdowns.Update(existedCountdown);
             }
             await _context.SaveChangesAsync();
@@ -113,6 +129,7 @@ namespace AbbContentEditor.Controllers
 
         // DELETE: api/Countdowns/5
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteCountdown(Guid id)
         {
             var countdown = await _context.Countdowns.FindAsync(id);

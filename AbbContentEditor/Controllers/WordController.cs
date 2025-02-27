@@ -1,5 +1,4 @@
-﻿using AbbContentEditor.Data;
-using AbbContentEditor.Data.Repositories;
+﻿using AbbContentEditor.Data.Repositories;
 using AbbContentEditor.Data.UoW;
 using AbbContentEditor.Models.Words;
 using AutoMapper;
@@ -17,16 +16,15 @@ namespace AbbContentEditor.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<WordController> _logger;
-        private readonly AbbAppContext _context;
+        
 
         public WordController(IRepository<WordCollection> wordColelctionRepository, IUnitOfWork unitOfWork, IMapper mapper,
-            ILogger<WordController> logger, AbbAppContext context)
+            ILogger<WordController> logger)
         {
             _wordColelctionRepository = wordColelctionRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
-            _context = context;
         }
 
         [HttpGet]
@@ -46,8 +44,8 @@ namespace AbbContentEditor.Controllers
         [Route("collections/{id}")]
         public IActionResult GetCollection(int id)
         {
-            string t = "b50bb495-4928-483a-b3b4-11afbe5e7b34";
-            var r = _unitOfWork.wordCollectionRepository.Find(x => x.Where(x => x.Id == id)); ;
+            string t = "511fa4d8-cd51-48f9-a246-4ceaa84de246";
+            var r = _unitOfWork.wordCollectionRepository.Find(x => x.Where(x => x.Id == id));
             return Ok(JsonSerializer.Serialize(r));
         }
     }

@@ -2,10 +2,10 @@
 using AbbContentEditor.Data.UoW;
 using AbbContentEditor.Models.Words;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 
 namespace AbbContentEditor.Controllers
 {
@@ -99,23 +99,21 @@ namespace AbbContentEditor.Controllers
 
         // POST: api/WordHistories
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<WordHistoryDto>> PostWordHistory(WordHistoryDto wordHistory)
         {
-
             if (wordHistory == null) return BadRequest();
 
             var wh = _mapper.Map<WordHistoryDto, WordHistory>(wordHistory);
-            
+            var userId = await _userManager.FindByNameAsync(User.Identity.Name);
+
+            wh.IdentityUserId = userId.Id;
+
             await _unitOfWork.wordHistoryRepository.AddAsync(wh);
             if (await _unitOfWork.Commit()) return Ok(wh);
-            return NoContent(); 
-
-            //_context.WordHistories.Add(wordHistory);
-            //await _context.SaveChangesAsync();
-
-            //return CreatedAtAction("GetWordHistory", new { id = wordHistory.Id }, wordHistory);
-            throw new NotImplementedException();
+            return NoContent();            
+            
         }
 
         // DELETE: api/WordHistories/5
@@ -137,15 +135,6 @@ namespace AbbContentEditor.Controllers
                 _logger.LogError($"Delete WordHistory error: {ex.Message}");
                 return BadRequest(ex.Message );
             }
-
-            //var wordHistory = await _context.WordHistories.FindAsync(id);
-            //if (wordHistory == null)
-            //{
-            //    return NotFound();
-            //}
-
-            //_context.WordHistories.Remove(wordHistory);
-            //await _context.SaveChangesAsync();
 
         }
 
