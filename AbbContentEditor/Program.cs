@@ -3,6 +3,7 @@ using AbbContentEditor.Data;
 using AbbContentEditor.Data.Repositories;
 using AbbContentEditor.Data.UoW;
 using AbbContentEditor.Helpers;
+using AbbContentEditor.Middleware;
 using AbbContentEditor.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -171,9 +172,10 @@ try
         };
     });
 
-    
+
 
     var app = builder.Build();
+    //app.UseMiddleware<TokenExpirationMiddleware>();
     app.UseCors(MyAllowSpecificOrigins);
     app.UseRouting();
 

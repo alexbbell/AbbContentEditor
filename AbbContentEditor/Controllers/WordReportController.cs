@@ -40,13 +40,26 @@ namespace AbbContentEditor.Controllers
             if (user == null) return BadRequest();
 
             //var r = _unitOfWork.wordCollectionRepository.Find(x => x.Where(x => x.Author.Id == t));;            
-            var r = _unitOfWork.wordHistoryRepository.Find(x=>x.Where(x=>x.IdentityUserId == user.Id));// Find(x => x.Where(x => x.Author.Id == t)); ;
-            List<WordHistoryDto> result = _mapper.Map<List<WordHistoryDto>>(r);
+            var r = _unitOfWork.wordHistoryRepository.Find(x=>x.Where(x=>x.IdentityUserId == user.Id), 0, int.MaxValue);// Find(x => x.Where(x => x.Author.Id == t)); ;
+            List<WordHistoryDto> results = _mapper.Map<List<WordHistoryDto>>(r);
 
-            string strResult = JsonConvert.SerializeObject(result,Formatting.Indented  );
+            int correntResults = results.Count(x => x.Correct);
+            int total = results.Count();
+            DateTime minTime = results.Min(x => x.AnswerTime);
+            DateTime maxTime = results.Max(x => x.AnswerTime);
+            var dateDiff = (maxTime - minTime).TotalHours;
+
+            WordsReport wordsReport = new WordsReport()
+            {
+                Attempts = total,
+                CorrectAnswers = correntResults,
+                TheTime = Math.Round(dateDiff, 2),
+                User = user.UserName
+            };
+            string strResult = JsonConvert.SerializeObject(results,Formatting.Indented  );
             string decodedText = Regex.Unescape(strResult);
 
-            return Ok(decodedText);
+            return Ok(wordsReport);
         }
 
     }

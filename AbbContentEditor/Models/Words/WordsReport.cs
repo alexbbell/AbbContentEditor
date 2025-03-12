@@ -4,9 +4,10 @@ namespace AbbContentEditor.Models.Words
 {
     public class WordsReport
     {
-        public IdentityUser User { get; set; }
-        public string Word { get; set; }
+        public string User { get; set; }
+        public double TheTime { get; set; }
         public int Attempts { get; set; }
         public int CorrectAnswers { get; set; }
+
     }
 }

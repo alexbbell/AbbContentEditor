@@ -98,6 +98,16 @@ namespace AbbContentEditor.Controllers
         public async Task<ActionResult<Countdown>> PostCountdown([FromBody]  CountDownRequest data)
         {
             // var username = data.UserName;
+
+            var expClaim = User.Claims.FirstOrDefault(c => c.Type == "exp")?.Value;
+            if (expClaim != null && long.TryParse(expClaim, out long exp))
+            {
+                var expiryDate = DateTimeOffset.FromUnixTimeSeconds(exp);
+                if (expiryDate < DateTimeOffset.UtcNow)
+                {
+                    return Unauthorized("Token expired");
+                }
+            }
             IdentityUser? username = await _userManager.FindByNameAsync(userName: User.Identity.Name);
             if(username == null)  return BadRequest();
             string countDownSecondsStr = _configuration.GetSection("GameSettings:CountDownSeconds").Value??"1000";
