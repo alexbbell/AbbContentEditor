@@ -104,6 +104,9 @@ namespace AbbContentEditor.Controllers
         public async Task<ActionResult<WordHistoryDto>> PostWordHistory(WordHistoryDto wordHistory)
         {
             if (wordHistory == null) return BadRequest();
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (user == null) return BadRequest();
+
 
             var wh = _mapper.Map<WordHistoryDto, WordHistory>(wordHistory);
             var userId = await _userManager.FindByNameAsync(User.Identity.Name);
@@ -117,17 +120,20 @@ namespace AbbContentEditor.Controllers
         }
 
         // DELETE: api/WordHistories/5
-        [HttpDelete("{userId}")]
-        public async Task<IActionResult> DeleteWordHistory(string userId)
+        [HttpDelete]
+        [Authorize]
+        public async Task<IActionResult> DeleteWordHistory()
         {
             //var items = _wordHistoryRepository.Find(x => x.Where(x => x.IdentityUserId == userId));
 
-            int deletedCount = await _unitOfWork.wordHistoryRepository.DeleteAsync(x => x.Where(x => x.IdentityUserId == userId));
+            var user = await _userManager.FindByNameAsync(userName: User.Identity.Name);
+            if (user == null) return BadRequest();
+            int deletedCount = await _unitOfWork.wordHistoryRepository.DeleteAsync(x => x.Where(x => x.IdentityUserId == user.Id));
             try
             {
                 await _unitOfWork.Commit();
                 Console.WriteLine($"deletedCount: {deletedCount}");
-                return Ok(deletedCount);
+                return Ok(deletedCount.ToString());
             }
             catch(Exception ex)
             {
