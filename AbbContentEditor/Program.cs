@@ -77,7 +77,8 @@ try
             {
                 policy
                 .WithOrigins("http://localhost:3000", 
-                        "http://localhost:3001", 
+                        "http://localhost:3001",
+                        "http://localhost:5173",
                         "http://localhost:5000", 
                         "https://localhost:5001", 
                         "https://dev.beliaeff.ru",
