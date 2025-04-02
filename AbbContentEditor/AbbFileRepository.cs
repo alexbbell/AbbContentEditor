@@ -15,7 +15,7 @@ namespace AbbContentEditor
         {
             _logger = logger;
             _configuration = configuration;
-            _workDir = _configuration.GetSection("FileDir").Value;
+            _workDir = _configuration.GetSection("FileDir").Value??"";
         }
 
         public string ReadLangContent(string lang)

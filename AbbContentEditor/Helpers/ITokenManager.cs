@@ -7,7 +7,7 @@ namespace AbbContentEditor.Helpers
     {
 
         //string GetToken(CustomUser user);
-        string GetAccessToken(string user);
+        string GenerateAccessToken(string user, IList<string> roles);
         string GenerateRefreshToken();
 
         ClaimsPrincipal GetPrincipalFromExpiredToken(string token);

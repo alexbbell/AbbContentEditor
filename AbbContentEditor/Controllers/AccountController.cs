@@ -1,6 +1,8 @@
 ﻿using AbbContentEditor.Data;
 using AbbContentEditor.Helpers;
 using AbbContentEditor.Models;
+using AbbContentEditor.Models.Enums;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -22,10 +24,11 @@ namespace AbbContentEditor.Controllers
         private readonly JWTSettings _options;
         private readonly ITokenManager _tokenManager;
         private readonly AbbAppContext _abbAppContext;
+        private readonly IMapper _mapper;
 
         public AccountController(IOptions<JWTSettings> optAccess, UserManager<IdentityUser> userManager, 
                                  SignInManager<IdentityUser> signInManager, ILogger<AccountController> logger, 
-                                 ITokenManager tokenManager, AbbAppContext abbAppContext)
+                                 ITokenManager tokenManager, AbbAppContext abbAppContext, IMapper mapper)
         {
             _userManager = userManager;
             _logger = logger;
@@ -33,6 +36,7 @@ namespace AbbContentEditor.Controllers
             _options = optAccess.Value;
             _tokenManager = tokenManager;
             _abbAppContext = abbAppContext;
+            _mapper = mapper;
         }
 
         [HttpPost]
@@ -44,10 +48,11 @@ namespace AbbContentEditor.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var user = new IdentityUser { UserName = model.Email, Email = model.Email, PasswordHash = model.Password };
+                    IdentityUser user = new IdentityUser { UserName = model.Email, Email = model.Email, PasswordHash = model.Password };
                     var result = await _userManager.CreateAsync(user, model.Password);
+                    var addRole = await _userManager.AddToRoleAsync(user, UserRoles.Guest.ToString());
 
-                    if (result.Succeeded)
+                    if (result.Succeeded && addRole.Succeeded)
                     {
                         // Handle successful registration
                         _logger.LogInformation($"User {model.Email} is successfully registered");
@@ -58,18 +63,35 @@ namespace AbbContentEditor.Controllers
                         _logger.LogError($"User {model.Email} could not register.");
                         string err = string.Join(",", result.Errors.Select(x=> x.Description));
 
-                        return new BadRequestObjectResult($"There was an error processing your request, please try again. " +
-                            $"{err}");
+                        return new BadRequestObjectResult(
+                            new ProblemDetails
+                            {
+                                Status = StatusCodes.Status400BadRequest,
+                                Title = "Bad Request",
+                                Detail = $"There was an error processing your request, please try again. {err}",
+                            }
+                            );
                     }
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return new BadRequestObjectResult(ex.Message);
+                return new BadRequestObjectResult(
+                    new ProblemDetails
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Title = "Bad Request",
+                        Detail = $"There was an error processing your request, please try again. {ex.Message}"
+                    });
                 throw;
             }
-            return new BadRequestObjectResult("Something wrong");
+            return new BadRequestObjectResult(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Bad Request",
+                Detail = "Something is wrong"
+            });
         }
 
 
@@ -114,22 +136,24 @@ namespace AbbContentEditor.Controllers
                     model.RememberMe, lockoutOnFailure: false);
                 Console.WriteLine($"Login {model.Email}");
                 _logger.LogInformation($"Login {model.Email}");
+                var user = _abbAppContext.Users.Where(u => u.NormalizedUserName.Equals(model.Email.ToUpper())).FirstOrDefault();
+                IList<string> userRoles = await _userManager.GetRolesAsync(user);
                 if (result.Succeeded)
                 {
                     // return your customize result 
                     var refreshToken = _tokenManager.GenerateRefreshToken();
-                    var accessToken = _tokenManager.GetAccessToken(model.Email);
+                    var accessToken = _tokenManager.GenerateAccessToken(model.Email, userRoles);
                     AuthenticationResponse tokenApiModel = new AuthenticationResponse()
                     {
                         AccessToken = accessToken,
                         RefreshToken = refreshToken
                     };
-                    var userId = _abbAppContext.Users.Where(u => u.NormalizedUserName.Equals(model.Email.ToUpper())).Select(x=>x.Id).FirstOrDefault();
+
                     _abbAppContext.UserTokens.Add( new IdentityUserToken<string>
                     {
                         LoginProvider = "abb",
                         Name = "PasswordResetToken",
-                        UserId = userId, 
+                        UserId = user.Id, 
                         Value = refreshToken
                     });
 
@@ -165,7 +189,7 @@ namespace AbbContentEditor.Controllers
 
         [HttpPost]
         [Route("refresh")]
-        public IActionResult Refresh(AuthenticationResponse tokenApiModel)
+        public async Task<IActionResult> Refresh(AuthenticationResponse tokenApiModel)
         {
             if (tokenApiModel is null)
                 return BadRequest("Invalid client request");
@@ -173,8 +197,9 @@ namespace AbbContentEditor.Controllers
             string refreshToken = tokenApiModel.RefreshToken;
             var principal = _tokenManager.GetPrincipalFromExpiredToken(accessToken);
             var username = principal.Identity.Name; //this is mapped to the Name claim by default
-            var user = _abbAppContext.Users.SingleOrDefault(u => u.UserName == username);
-
+            var user =  _abbAppContext.Users.SingleOrDefault(u => u.UserName == username);
+            
+            var roles = await _userManager.GetRolesAsync(user);
             var handler = new JwtSecurityTokenHandler();
             var jwtSecurityToken = handler.ReadJwtToken(accessToken);
             
@@ -183,7 +208,7 @@ namespace AbbContentEditor.Controllers
             if (user is null )
                 return BadRequest("Invalid client request");
 
-            var newAccessToken = _tokenManager.GetAccessToken(user.Email);
+            var newAccessToken = _tokenManager.GenerateAccessToken(user.Email, roles);
             var newRefreshToken = _tokenManager.GenerateRefreshToken();
             var rtoken = _abbAppContext.UserTokens.
                     SingleOrDefault(u=>u.UserId.Equals(user.Id) && 
@@ -233,6 +258,15 @@ namespace AbbContentEditor.Controllers
         //    return Ok(response);
         //}
 
+        [HttpGet("Userlist")]
+        public List<UserDto> GetUserList()
+        {
+            
+            var users = _abbAppContext.Users.ToList();
+            var usersDto = _mapper.Map<List<IdentityUser>, List<UserDto>>(users);
+
+            return usersDto;
+        }
 
         [HttpGet("exit")]
         public string ExitToken()
@@ -249,6 +283,31 @@ namespace AbbContentEditor.Controllers
                 );
 
             return new JwtSecurityTokenHandler().WriteToken(jwt);
+        }
+
+
+
+        //[Authorize(Roles = "Guest")]
+        [HttpGet("getinfo")]
+        [Authorize]
+        public async Task<string> GetUserInfo()
+        {
+
+            
+            //var user = HttpContext.User;
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            await _userManager.AddToRoleAsync(user, UserRoles.Admin.ToString());
+            var roles = await _userManager.GetRolesAsync(user);
+
+            if(roles.FirstOrDefault(x=>x.Equals(UserRoles.Admin.ToString())) != null )
+            {
+                return $"{user.UserName} {String.Join(", ", roles.ToArray())}";
+            }
+                        
+            string resilt = $"No gutest: {user.UserName}: {nameof(UserRoles.Guest)}";
+            return resilt;
+
+
         }
 
 

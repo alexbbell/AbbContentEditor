@@ -82,9 +82,7 @@ try
                         "http://localhost:5000", 
                         "https://localhost:5001", 
                         "https://dev.beliaeff.ru",
-                        "https://api.beliaeff.ru"
-                        )
-
+                        "https://api.beliaeff.ru")
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
@@ -145,12 +143,15 @@ try
         options.SignIn.RequireConfirmedAccount = false; // for test only!
         options.SignIn.RequireConfirmedEmail = false;
         options.SignIn.RequireConfirmedPhoneNumber = false;
-        
-        
     })
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AbbAppContext>()
     .AddDefaultTokenProviders();
 
+    builder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy("AdminsOnly", policy => policy.RequireRole("Admins"));
+    });
 
     builder.Services.AddAuthentication(options =>
     {
@@ -173,7 +174,11 @@ try
         };
     });
 
-
+    builder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy("AdminsOnly", policy => policy.RequireRole("Admins"));
+        options.AddPolicy("Guest", policy => policy.RequireRole("Guest"));
+    });
 
     var app = builder.Build();
     //app.UseMiddleware<TokenExpirationMiddleware>();
@@ -202,7 +207,8 @@ try
     {
         var scopedProvider = scope.ServiceProvider;
         var context = scopedProvider.GetRequiredService<AbbAppContext>();
-        CreateDefaultData createDefaultData = new CreateDefaultData(context);        
+        var roleManager = scopedProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        CreateDefaultData createDefaultData = new CreateDefaultData(context, roleManager );        
     }
 
     app.Run();

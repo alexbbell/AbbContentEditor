@@ -61,6 +61,7 @@ namespace AbbContentEditor.Controllers
             PasswordHasher<IdentityUser> hasher = new PasswordHasher<IdentityUser>();
 
             var isUser = _abbAppContext.Users.FirstOrDefault(u => u.Email.Equals(authRequest.Username));
+            var roles = await _userManager.GetRolesAsync(isUser);
 
             if (isUser == null)
             {
@@ -77,7 +78,7 @@ namespace AbbContentEditor.Controllers
             return Ok(
                 new AuthenticationResponse
                 {
-                    AccessToken = _tokenManager.GetAccessToken(isUser.UserName),
+                    AccessToken = _tokenManager.GenerateAccessToken(isUser.UserName, roles),
                     RefreshToken = _tokenManager.GenerateRefreshToken()
                 });
 

@@ -1,0 +1,18 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+
+
+POST https://localhost:7168/api/Account/RegisterUser
+Content-Type: application/json
+{
+  "agreeTerms": true,
+  "confirmPassword": "Ab123456789$",
+  "email":  "alexey3@beliaeff.ru",
+  "password": "Ab123456789$"
+}
+
+### List of users
+GET https://localhost:7168/api/Account/Userlist
+
+
+###
+GET https://localhost:7168/api/Account/getinfo

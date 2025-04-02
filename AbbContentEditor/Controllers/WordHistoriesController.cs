@@ -32,19 +32,16 @@ namespace AbbContentEditor.Controllers
 
         // GET: api/WordHistories
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<WordHistoryDto>>> GetWordHistories()
         {
 
-            string tempUserId = "e3326c3b-e8a3-481e-ad52-56a787695738";
-            string tempUserId2 = "48c1bfc6-1bbb-4618-a87b-c40378cc31af";
-            string email = "alexey@beliaeff.ru";
-            var user = await _userManager.FindByIdAsync(tempUserId2);
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
             //var user = await _userManager.FindByEmailAsync(email.ToLower());
-            var userId = user.Id;
-
-            _logger.LogInformation($"User is {userId}");
-            List<WordHistory> history = _wordHistoryRepository.Find(x => x.Where(x => x.IdentityUserId == userId)).ToList();
-            List<WordHistoryDto> historyDto = _mapper.Map< List < WordHistory > , List <WordHistoryDto>>(history);
+            
+            _logger.LogInformation($"User is {user.Id}");
+            List<WordHistory> history = _wordHistoryRepository.Find(x => x.Where(x => x.IdentityUserId == user.Id)).ToList();
+            List<WordHistoryDto> historyDto = _mapper.Map<List<WordHistory> , List <WordHistoryDto>>(history);
             return Ok(historyDto);
             //return Ok(_wordHistoryRepository.Find());
         }

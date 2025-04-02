@@ -1,6 +1,7 @@
 ﻿using AbbContentEditor.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -66,12 +67,19 @@ namespace AbbContentEditor.Helpers
         //    return new JwtSecurityTokenHandler().WriteToken(jwt);
         //}
 
-        public string GetAccessToken(string user)
+        public string GenerateAccessToken(string user, IList<string> roles)
         {
+             //= new List<string>();
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user)
             };
+            // Add roles as claims
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
             var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
             var jwt = new JwtSecurityToken(
                 issuer: _jwtOptions.Issuer,

@@ -14,7 +14,6 @@ namespace AbbContentEditor.Models.Words
 
     public class WordCollection : BaseClass 
     {
-        public int Id { get; set; }
 
         public JsonDocument? WordsCollection
         {

@@ -1,11 +1,10 @@
-﻿using AbbContentEditor.Data;
-using AbbContentEditor.Data.UoW;
+﻿using AbbContentEditor.Data.UoW;
 using AbbContentEditor.Helpers;
 using AbbContentEditor.Models;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 using System.Text.Json;
 
 namespace AbbContentEditor.Controllers
@@ -22,7 +21,9 @@ namespace AbbContentEditor.Controllers
         public string File { get; set; }
         public int PostId { get; set; }
     }
+    
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin")]
     [ApiController]
     public class BlogsController : ControllerBase
     {
@@ -48,6 +49,7 @@ namespace AbbContentEditor.Controllers
 
         // GET: api/Blogs
         [HttpGet]
+
         public async Task<ActionResult<BlogListItemsResponse>> GetBlogs([FromQuery]int page = 1, [FromQuery] int pageSize = 10)
         {
 
