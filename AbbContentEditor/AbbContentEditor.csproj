@@ -45,10 +45,14 @@
     <Content Update="nlog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="StaticFiles\demoCollection.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Migrations\" />
+    <Folder Include="Services\" />
     <Folder Include="UploadedImages\" />
     <Folder Include="uploads\" />
   </ItemGroup>

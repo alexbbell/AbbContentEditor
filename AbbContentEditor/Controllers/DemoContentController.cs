@@ -47,7 +47,8 @@ namespace AbbContentEditor.Controllers
 
         private async Task<bool> PopulateWordHistory()
         {
-            string filePath = @"C:\Projects\AbbContentEditor\AbbContentEditor\StaticFiles\demoCollection.json";
+            //Check this generation later
+            string filePath = @"./StaticFiles/demoCollection.json";
             // Read the JSON file
             string jsonContent = System.IO.File.ReadAllText(filePath);
             List<Word> words = JsonSerializer.Deserialize<List<Word>>(jsonContent);

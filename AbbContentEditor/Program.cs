@@ -36,16 +36,16 @@ try
     builder.Logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
     builder.Host.UseNLog();
 
-    //string  connStr = builder.Configuration.GetConnectionString("PGSQLConnectionString");
-    string connStr = builder.Configuration.GetConnectionString("SQLiteConnectionString"); 
+    string  connStr = builder.Configuration.GetConnectionString("PGSQLConnectionString");
+    //string connStr = builder.Configuration.GetConnectionString("SQLiteConnectionString"); 
 
 
         //// options.UseSqlite(connStr);
 
     builder.Services.AddDbContext<AbbAppContext>(options =>
     {
-        options.UseSqlite(connStr);
-         //options.UseNpgsql(connStr);
+        //options.UseSqlite(connStr);
+         options.UseNpgsql(connStr);
         //options.UseNpgsql(connStr, npgsqlOptions =>
         //{
         //    npgsqlOptions.EnableRetryOnFailure(
@@ -205,6 +205,8 @@ try
     //CreateDefaultData createDefaultData = new CreateDefaultData(context);
     using (var scope = app.Services.CreateScope())
     {
+        Console.WriteLine("Try create user");
+
         var scopedProvider = scope.ServiceProvider;
         var context = scopedProvider.GetRequiredService<AbbAppContext>();
         var roleManager = scopedProvider.GetRequiredService<RoleManager<IdentityRole>>();
