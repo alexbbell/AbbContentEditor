@@ -48,7 +48,8 @@ namespace AbbContentEditor.Data
             }
             // Override default AspNet Identity table names
             string prefix = "Abb_";
-            modelBuilder.Entity<IdentityUser>(entity => { entity.ToTable(name: $"{prefix}Users"); });
+            modelBuilder.Entity<AbbAppUser>(entity => { entity.ToTable(name: $"{prefix}Users"); });
+            modelBuilder.Entity<IdentityUser>(entity => { entity.ToTable(name: $"{prefix}AppUsers"); });
             modelBuilder.Entity<IdentityRole>(entity => { entity.ToTable(name: $"{prefix}Roles"); });
             modelBuilder.Entity<IdentityUserRole<string>>(entity => { entity.ToTable($"{prefix}UserRoles"); });
             modelBuilder.Entity<IdentityUserClaim<string>>(entity => { entity.ToTable($"{prefix}UserClaims"); });

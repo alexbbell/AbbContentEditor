@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AbbContentEditor.Migrations
 {
     [DbContext(typeof(AbbAppContext))]
-    [Migration("20250406073921_initial")]
+    [Migration("20250504145807_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -104,7 +104,7 @@ namespace AbbContentEditor.Migrations
                             Preview = "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…",
                             TheText = "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.",
                             Title = "My first blog post from dbcontext migration",
-                            UpdDate = new DateTime(2025, 4, 6, 7, 39, 19, 984, DateTimeKind.Utc).AddTicks(6188)
+                            UpdDate = new DateTime(2025, 5, 4, 14, 58, 5, 952, DateTimeKind.Utc).AddTicks(8489)
                         });
                 });
 
@@ -336,7 +336,9 @@ namespace AbbContentEditor.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("Abb_Users", (string)null);
+                    b.ToTable("Abb_AppUsers", (string)null);
+
+                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -420,6 +422,27 @@ namespace AbbContentEditor.Migrations
                     b.ToTable("Abb_UserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("AbbContentEditor.Models.AbbAppUser", b =>
+                {
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RegDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Role")
+                        .HasColumnType("integer");
+
+                    b.ToTable("Abb_Users", (string)null);
+                });
+
             modelBuilder.Entity("AbbContentEditor.Models.Blog", b =>
                 {
                     b.HasOne("AbbContentEditor.Models.Category", "Category")
@@ -498,6 +521,15 @@ namespace AbbContentEditor.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AbbContentEditor.Models.AbbAppUser", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithOne()
+                        .HasForeignKey("AbbContentEditor.Models.AbbAppUser", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

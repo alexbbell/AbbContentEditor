@@ -19,11 +19,11 @@ namespace AbbContentEditor.Controllers
         private readonly ILogger<AuthController> _logger;
         private readonly AbbAppContext _abbAppContext;
         private readonly ITokenManager _tokenManager;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<AbbAppUser> _userManager;
 
 
         public AuthController(IOptions<JWTSettings> optAccess, ILogger<AuthController> logger, 
-                    AbbAppContext abbAppContext, ITokenManager tokenManager, UserManager<IdentityUser> userManager)
+                    AbbAppContext abbAppContext, ITokenManager tokenManager, UserManager<AbbAppUser> userManager)
         {
             _logger = logger;
             _options = optAccess.Value;
@@ -60,7 +60,8 @@ namespace AbbContentEditor.Controllers
         {
             PasswordHasher<IdentityUser> hasher = new PasswordHasher<IdentityUser>();
 
-            var isUser = _abbAppContext.Users.FirstOrDefault(u => u.Email.Equals(authRequest.Username));
+            //var isUser = _abbAppContext.Users.FirstOrDefault(u => u.Email.Equals(authRequest.Username));
+            var isUser = await _userManager.FindByEmailAsync(authRequest.Username);
             var roles = await _userManager.GetRolesAsync(isUser);
 
             if (isUser == null)

@@ -1,4 +1,5 @@
-﻿using AbbContentEditor.Models.Enums;
+﻿using AbbContentEditor.Models;
+using AbbContentEditor.Models.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SQLitePCL;
@@ -43,8 +44,9 @@ namespace AbbContentEditor.Data
 
             try
             {
-                IdentityUser user = new IdentityUser () {
+                AbbAppUser user = new AbbAppUser () {
                         UserName = "alexey@beliaeff.ru",
+                        FirstName = "Aleksei", LastName = "Beliaev",
                         Email = "alexey@beliaeff.ru",
                         NormalizedUserName = "ALEXEY@BELIAEFF.RU",
                         NormalizedEmail = "ALEXEY@BELIAEFF.RU",

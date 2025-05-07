@@ -16,8 +16,9 @@ namespace AbbContentEditor.Controllers
         private readonly AbbAppContext _context;
         private ILogger<Countdown> _logger;
         private readonly IConfiguration _configuration;
-        private readonly UserManager<IdentityUser> _userManager;
-        public CountdownsController(AbbAppContext context, ILogger<Countdown> logger, IConfiguration configuration, UserManager<IdentityUser> userManager)
+        private readonly UserManager<AbbAppUser> _userManager;
+        public CountdownsController(AbbAppContext context, ILogger<Countdown> logger, IConfiguration configuration, 
+            UserManager<AbbAppUser> userManager)
         {
             _context = context;
             _logger = logger;
@@ -108,7 +109,7 @@ namespace AbbContentEditor.Controllers
                     return Unauthorized("Token expired");
                 }
             }
-            IdentityUser? username = await _userManager.FindByNameAsync(userName: User.Identity.Name);
+            AbbAppUser? username = await _userManager.FindByNameAsync(userName: User.Identity.Name);
             if(username == null)  return BadRequest();
             string countDownSecondsStr = _configuration.GetSection("GameSettings:CountDownSeconds").Value??"1000";
 

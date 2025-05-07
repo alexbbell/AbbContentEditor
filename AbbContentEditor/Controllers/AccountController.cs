@@ -18,16 +18,16 @@ namespace AbbContentEditor.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<AbbAppUser> _userManager;
+        private readonly SignInManager<AbbAppUser> _signInManager;
         private readonly ILogger<AccountController> _logger;
         private readonly JWTSettings _options;
         private readonly ITokenManager _tokenManager;
         private readonly AbbAppContext _abbAppContext;
         private readonly IMapper _mapper;
 
-        public AccountController(IOptions<JWTSettings> optAccess, UserManager<IdentityUser> userManager, 
-                                 SignInManager<IdentityUser> signInManager, ILogger<AccountController> logger, 
+        public AccountController(IOptions<JWTSettings> optAccess, UserManager<AbbAppUser> userManager, 
+                                 SignInManager<AbbAppUser> signInManager, ILogger<AccountController> logger, 
                                  ITokenManager tokenManager, AbbAppContext abbAppContext, IMapper mapper)
         {
             _userManager = userManager;
@@ -48,7 +48,7 @@ namespace AbbContentEditor.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    IdentityUser user = new IdentityUser { UserName = model.Email, Email = model.Email, PasswordHash = model.Password };
+                    AbbAppUser user = new AbbAppUser { UserName = model.Email, Email = model.Email, PasswordHash = model.Password };
                     var result = await _userManager.CreateAsync(user, model.Password);
                     var addRole = await _userManager.AddToRoleAsync(user, UserRoles.Guest.ToString());
 
@@ -113,7 +113,7 @@ namespace AbbContentEditor.Controllers
             return Ok();
         }
 
-        private async void SendEmailRegistration (IdentityUser user, string? returnUrl)
+        private async void SendEmailRegistration (AbbAppUser user, string? returnUrl)
         {
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
@@ -134,9 +134,11 @@ namespace AbbContentEditor.Controllers
             {
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, 
                     model.RememberMe, lockoutOnFailure: false);
-                Console.WriteLine($"Login {model.Email}");
                 _logger.LogInformation($"Login {model.Email}");
-                var user = _abbAppContext.Users.Where(u => u.NormalizedUserName.Equals(model.Email.ToUpper())).FirstOrDefault();
+                //var user = _abbAppContext.Users.Where(u => u.NormalizedUserName.Equals(model.Email.ToUpper())).FirstOrDefault();
+                var user = _userManager.Users.FirstOrDefault(x=>x.Email.Equals(model.Email.ToUpper(), StringComparison.InvariantCultureIgnoreCase));
+                if(user == null) return Unauthorized(new { message = "Access denied. Please provide valid credentials" });
+
                 IList<string> userRoles = await _userManager.GetRolesAsync(user);
                 if (result.Succeeded)
                 {
@@ -195,9 +197,10 @@ namespace AbbContentEditor.Controllers
                 return BadRequest("Invalid client request");
             string accessToken = tokenApiModel.AccessToken;
             string refreshToken = tokenApiModel.RefreshToken;
-            var principal = _tokenManager.GetPrincipalFromExpiredToken(accessToken);
+            System.Security.Claims.ClaimsPrincipal principal = _tokenManager.GetPrincipalFromExpiredToken(accessToken);
             var username = principal.Identity.Name; //this is mapped to the Name claim by default
-            var user =  _abbAppContext.Users.SingleOrDefault(u => u.UserName == username);
+            //var user =  _abbAppContext.Users.SingleOrDefault(u => u.UserName == username);
+            var user = await _userManager.GetUserAsync(principal);
             
             var roles = await _userManager.GetRolesAsync(user);
             var handler = new JwtSecurityTokenHandler();
@@ -258,15 +261,7 @@ namespace AbbContentEditor.Controllers
         //    return Ok(response);
         //}
 
-        [HttpGet("Userlist")]
-        public List<UserDto> GetUserList()
-        {
-            
-            var users = _abbAppContext.Users.ToList();
-            var usersDto = _mapper.Map<List<IdentityUser>, List<UserDto>>(users);
 
-            return usersDto;
-        }
 
         [HttpGet("exit")]
         public string ExitToken()
@@ -287,28 +282,6 @@ namespace AbbContentEditor.Controllers
 
 
 
-        //[Authorize(Roles = "Guest")]
-        [HttpGet("getinfo")]
-        [Authorize]
-        public async Task<string> GetUserInfo()
-        {
-
-            
-            //var user = HttpContext.User;
-            var user = await _userManager.FindByNameAsync(User.Identity.Name);
-            await _userManager.AddToRoleAsync(user, UserRoles.Admin.ToString());
-            var roles = await _userManager.GetRolesAsync(user);
-
-            if(roles.FirstOrDefault(x=>x.Equals(UserRoles.Admin.ToString())) != null )
-            {
-                return $"{user.UserName} {String.Join(", ", roles.ToArray())}";
-            }
-                        
-            string resilt = $"No gutest: {user.UserName}: {nameof(UserRoles.Guest)}";
-            return resilt;
-
-
-        }
 
 
 

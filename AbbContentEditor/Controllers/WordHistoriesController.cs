@@ -1,5 +1,6 @@
 ﻿using AbbContentEditor.Data.Repositories;
 using AbbContentEditor.Data.UoW;
+using AbbContentEditor.Models;
 using AbbContentEditor.Models.Words;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -18,10 +19,11 @@ namespace AbbContentEditor.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<WordHistoriesController> _logger;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<AbbAppUser> _userManager;
 
         public WordHistoriesController(IRepository<WordHistory> wordHistoryRepository, 
-            IUnitOfWork unitOfWork, IMapper mapper, ILogger<WordHistoriesController> logger, UserManager<IdentityUser> userManager)
+            IUnitOfWork unitOfWork, IMapper mapper, ILogger<WordHistoriesController> logger, 
+            UserManager<AbbAppUser> userManager)
         {
             _wordHistoryRepository= wordHistoryRepository;
             _unitOfWork = unitOfWork;

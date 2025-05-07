@@ -10,9 +10,56 @@ Content-Type: application/json
   "password": "Ab123456789$"
 }
 
+
+### Login
+POST https://localhost:7168/api/Account/login
+Content-Type: application/json
+{
+  "email":  "alexey@beliaeff.ru",
+  "password": "Ab123456789$",
+  "rememberme": true
+}
+
 ### List of users
 GET https://localhost:7168/api/Account/Userlist
 
 
 ###
 GET https://localhost:7168/api/Account/getinfo
+
+
+###
+GET https://localhost:7168/api/UserManager/Userlist
+
+
+### GeT user
+
+https://localhost:7168/api/UserManager/getinfo/d3669ba6-8bde-40ed-bd3a-93dce13966cd
+
+###
+POST https://localhost:7168/api/UserManager/add
+Content-Type: application/json
+  {
+  
+  "name": "string",
+  "userName": "string",
+  "email": "string",
+  "twoFactorEnabled": true,
+  "password": "Abujhwhs7de$3##24eb",
+  "confirmPassword": "string",
+  "errorText": "string"
+}
+
+###
+PUT https://localhost:7168/api/UserManager/update
+Content-Type: application/json
+  {
+  "id": "9f25f120-ac6f-48cd-8c9a-327b03423c9d",
+  "name": "string",
+  "userName": "string",
+  "email": "string",
+  "twoFactorEnabled": true,
+  "password": "Abujhwhs7de$3##24eb",
+  "confirmPassword": "string",
+  "errorText": "string"
+}

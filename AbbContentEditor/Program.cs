@@ -110,11 +110,11 @@ try
         options.User.RequireUniqueEmail = false;
         options.Tokens.ProviderMap.Add("CustomEmailConfirmation",
         new TokenProviderDescriptor(
-            typeof(CustomEmailConfirmationTokenProvider<IdentityUser>)));
+            typeof(CustomEmailConfirmationTokenProvider<AbbAppUser>)));
         options.Tokens.EmailConfirmationTokenProvider = "CustomEmailConfirmation";
 
     });
-    builder.Services.AddTransient<CustomEmailConfirmationTokenProvider<IdentityUser>>();
+    builder.Services.AddTransient<CustomEmailConfirmationTokenProvider<AbbAppUser>>();
 
     //builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
     builder.Services.AddAutoMapper(typeof(Program).Assembly);
@@ -137,7 +137,7 @@ try
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 
-    builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+    builder.Services.AddIdentity<AbbAppUser, IdentityRole>(options =>
     {
         options.User.RequireUniqueEmail = false;
         options.SignIn.RequireConfirmedAccount = false; // for test only!
