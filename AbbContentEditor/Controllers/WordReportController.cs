@@ -1,5 +1,6 @@
 ﻿using AbbContentEditor.Data.Repositories;
 using AbbContentEditor.Data.UoW;
+using AbbContentEditor.Models;
 using AbbContentEditor.Models.Words;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -19,10 +20,10 @@ namespace AbbContentEditor.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<WordReportController> _logger;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<AbbAppUser> _userManager;
 
         public WordReportController(IRepository<WordCollection> wordColelctionRepository, IUnitOfWork unitOfWork, IMapper mapper,
-            ILogger<WordReportController> logger, UserManager<IdentityUser> userManager)
+            ILogger<WordReportController> logger, UserManager<AbbAppUser> userManager)
         {
             _wordColelctionRepository = wordColelctionRepository;
             _unitOfWork = unitOfWork;
@@ -46,8 +47,12 @@ namespace AbbContentEditor.Controllers
 
                 int correntResults = results.Count(x => x.Correct);
                 int total = results.Count();
-                DateTime minTime = results.Min(x => x.AnswerTime);
-                DateTime maxTime = results.Max(x => x.AnswerTime);
+                DateTime minTime = results != null && results.Any() ? 
+                        results.Min(x => x.AnswerTime) : DateTime.MinValue;
+
+                DateTime maxTime = results != null && results.Any() ?
+                        results.Max(x => x.AnswerTime) : DateTime.MinValue;
+                
                 var dateDiff = (maxTime - minTime).TotalHours;
 
                 WordsReport wordsReport = new WordsReport()

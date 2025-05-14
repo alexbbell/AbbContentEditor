@@ -23,6 +23,8 @@ Content-Type: application/json
 ### List of users
 GET https://localhost:7168/api/Account/Userlist
 
+### Add demo collection
+GET https://localhost:7168/api/DemoContent/
 
 ###
 GET https://localhost:7168/api/Account/getinfo

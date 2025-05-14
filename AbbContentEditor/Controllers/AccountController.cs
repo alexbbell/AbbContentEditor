@@ -136,8 +136,9 @@ namespace AbbContentEditor.Controllers
                     model.RememberMe, lockoutOnFailure: false);
                 _logger.LogInformation($"Login {model.Email}");
                 //var user = _abbAppContext.Users.Where(u => u.NormalizedUserName.Equals(model.Email.ToUpper())).FirstOrDefault();
-                var user = _userManager.Users.FirstOrDefault(x=>x.Email.Equals(model.Email.ToUpper(), StringComparison.InvariantCultureIgnoreCase));
-                if(user == null) return Unauthorized(new { message = "Access denied. Please provide valid credentials" });
+                //var user = _userManager.Users.FirstOrDefault(x=>x.Email.Equals(model.Email.ToUpper(), StringComparison.InvariantCultureIgnoreCase));
+                var user = await _userManager.FindByNameAsync(model.Email);
+                if (user == null) return Unauthorized(new { message = "Access denied. Please provide valid credentials" });
 
                 IList<string> userRoles = await _userManager.GetRolesAsync(user);
                 if (result.Succeeded)

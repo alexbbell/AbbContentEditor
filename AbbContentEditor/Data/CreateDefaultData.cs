@@ -9,23 +9,31 @@ namespace AbbContentEditor.Data
 {
     public class CreateDefaultData
     {
-        private readonly AbbAppContext _context;
+        private readonly UserManager<AbbAppUser> _userManager ;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly PasswordHasher<IdentityUser> _passwordHasher = new PasswordHasher<IdentityUser>();
-        public CreateDefaultData(AbbAppContext context, RoleManager<IdentityRole> roleManager)
+        private readonly PasswordHasher<AbbAppUser> _passwordHasher = new PasswordHasher<AbbAppUser>();
+        private readonly IUserStore<AbbAppUser> _userStore;
+        public CreateDefaultData(UserManager<AbbAppUser> userManager,
+            IUserStore<AbbAppUser> userStore,
+            RoleManager<IdentityRole> roleManager)
         {
-            _context = context;
+            _userManager = userManager;
             _roleManager = roleManager;
-            if( context.Database.IsSqlite())
-            {
-                Batteries.Init();
-            }
-            var iUser = context.Users.FirstOrDefault(u => u.UserName.Equals("alexey@beliaeff.ru"));
-            if (iUser == null ) {
-                Console.WriteLine("User doesn't exist");
-                CreateDefaultUser();
-            }
+            _userStore = userStore;
+            //if( context.Database.IsSqlite())
+            //{
+            //    Batteries.Init();
+            //}
+        }
 
+        public async Task InitializeAsync()
+        {
+            var existingUser = await _userManager.FindByEmailAsync("alexey@beliaeff.ru");
+            if (existingUser == null)
+            {
+                Console.WriteLine("User doesn't exist");
+                await CreateDefaultUser();
+            }
         }
 
         public async Task CreateDefaultUser ()
@@ -33,35 +41,32 @@ namespace AbbContentEditor.Data
 
             var roles = new[] { UserRoles.Guest.ToString(), UserRoles.Contributor.ToString(),
             UserRoles.Admin.ToString()};
-            //foreach(var role in roles)
-            //{
-            //    if (!await _roleManager.RoleExistsAsync(role))
-            //    {
-            //        await _roleManager.CreateAsync(new IdentityRole(role));
-            //    }
-            //}
             Console.WriteLine("Method to create a user");
-
+            var newUser = Activator.CreateInstance<AbbAppUser>();
             try
             {
                 AbbAppUser user = new AbbAppUser () {
                         UserName = "alexey@beliaeff.ru",
-                        FirstName = "Aleksei", LastName = "Beliaev",
+                        FirstName = "Aleksei", 
+                        LastName = "Beliaev",
                         Email = "alexey@beliaeff.ru",
-                        NormalizedUserName = "ALEXEY@BELIAEFF.RU",
-                        NormalizedEmail = "ALEXEY@BELIAEFF.RU",
+                        //NormalizedUserName = "ALEXEY@BELIAEFF.RU",
+                        //NormalizedEmail = "ALEXEY@BELIAEFF.RU",
                         EmailConfirmed = true,
                         LockoutEnabled = false,
                     
                         };
-                _context.Users.Add (user); 
-                var hashedPassword = _passwordHasher.HashPassword(user, Environment.GetEnvironmentVariable("DEFAULTPASS"));
-                user.PasswordHash = hashedPassword;
-                user.SecurityStamp = Guid.NewGuid().ToString();
-                user.TwoFactorEnabled = false;
-                user.NormalizedEmail = user.Email.Normalize();
-                _context.SaveChanges();
-            Console.WriteLine("User is created");
+                //var hashedPassword = _passwordHasher.HashPassword(user, Environment.GetEnvironmentVariable("DEFAULTPASS"));
+                var hashedPassword = Environment.GetEnvironmentVariable("DEFAULTPASS");
+                newUser.FirstName = user.FirstName;
+                newUser.LastName = user.LastName;
+                newUser.RegDate = DateTime.UtcNow;
+                await _userStore.SetUserNameAsync(newUser, user.UserName, CancellationToken.None);
+                
+                                
+                var result = await _userManager.CreateAsync(newUser, hashedPassword);
+
+                if(result.Succeeded) Console.WriteLine("User is created");
             } catch(Exception ex)
             {
                 Console.WriteLine($"error for User {ex.Message}");

@@ -46,6 +46,8 @@ try
     {
         //options.UseSqlite(connStr);
          options.UseNpgsql(connStr);
+        options.LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
+        .EnableSensitiveDataLogging();
         //options.UseNpgsql(connStr, npgsqlOptions =>
         //{
         //    npgsqlOptions.EnableRetryOnFailure(
@@ -148,6 +150,8 @@ try
     .AddEntityFrameworkStores<AbbAppContext>()
     .AddDefaultTokenProviders();
 
+    builder.Services.AddScoped<CreateDefaultData>();
+
     builder.Services.AddAuthorization(options =>
     {
         options.AddPolicy("AdminsOnly", policy => policy.RequireRole("Admins"));
@@ -202,18 +206,21 @@ try
 
 
     //var context = app.Services.GetService<AbbAppContext>();
-    //CreateDefaultData createDefaultData = new CreateDefaultData(context);
+    
     using (var scope = app.Services.CreateScope())
     {
         Console.WriteLine("Try create user");
 
         var scopedProvider = scope.ServiceProvider;
-        var context = scopedProvider.GetRequiredService<AbbAppContext>();
-        var roleManager = scopedProvider.GetRequiredService<RoleManager<IdentityRole>>();
-        CreateDefaultData createDefaultData = new CreateDefaultData(context, roleManager );        
-    }
+        var userManager = scopedProvider.GetRequiredService<UserManager<AbbAppUser>>();
+        var userStore = scopedProvider.GetRequiredService<IUserStore<AbbAppUser>>();
 
-    app.Run();
+        var roleManager = scopedProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        CreateDefaultData createDefaultData = new CreateDefaultData(userManager, userStore, roleManager);
+        await createDefaultData.InitializeAsync();
+        }
+
+        app.Run();
 }
 catch (Exception exception)
 {

@@ -1,14 +1,11 @@
 ﻿using AbbContentEditor.Data;
 using AbbContentEditor.Data.Repositories;
 using AbbContentEditor.Data.UoW;
+using AbbContentEditor.Models;
 using AbbContentEditor.Models.Words;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using NuGet.Protocol;
-using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
-using System.IO;
 using System.Text.Json;
 
 
@@ -23,16 +20,17 @@ namespace AbbContentEditor.Controllers
         private readonly IMapper _mapper;
         private readonly ILogger<DemoContentController> _logger;
         private readonly AbbAppContext _context;
-
+        private readonly UserManager<AbbAppUser> _userManager;
 
         public DemoContentController(IRepository<WordCollection> wordColelctionRepository, IUnitOfWork unitOfWork, IMapper mapper,
-            ILogger<DemoContentController> logger, AbbAppContext context)
+            ILogger<DemoContentController> logger, AbbAppContext context, UserManager<AbbAppUser> usermanager)
         {
             _wordColelctionRepository = wordColelctionRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
             _context = context;
+            _userManager = usermanager;
         }
 
         [HttpGet]
@@ -53,7 +51,8 @@ namespace AbbContentEditor.Controllers
             string jsonContent = System.IO.File.ReadAllText(filePath);
             List<Word> words = JsonSerializer.Deserialize<List<Word>>(jsonContent);
 
-            var userId = _context.Users.FirstOrDefault(x => x.NormalizedUserName == "ALEXEY@BELIAEFF.RU");
+            //var userId = _context.Users.FirstOrDefault(x => x.NormalizedUserName == "ALEXEY@BELIAEFF.RU");
+            var userId = await _userManager.FindByEmailAsync("alexey@beliaeff.ru");
             if (userId == null) { return false; }
 
             WordCollection wc = new WordCollection();

@@ -9,7 +9,7 @@ namespace AbbContentEditor.Models.Words
         public string Word { get; set; }
         public bool Correct { get; set; }
         [JsonIgnore]
-        public IdentityUser? IdentityUser { get; set; }
+        public AbbAppUser? IdentityUser { get; set; }
         [JsonIgnore]
         public string IdentityUserId { get; set; }
 

@@ -16,10 +16,28 @@ namespace AbbContentEditor.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Abb_AppUsers",
+                name: "Abb_Roles",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Abb_Roles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Abb_Users",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    FirstName = table.Column<string>(type: "text", nullable: false),
+                    LastName = table.Column<string>(type: "text", nullable: false),
+                    RegDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Role = table.Column<int>(type: "integer", nullable: true),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -37,21 +55,7 @@ namespace AbbContentEditor.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Abb_AppUsers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Abb_Roles",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Abb_Roles", x => x.Id);
+                    table.PrimaryKey("PK_Abb_Users", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -98,133 +102,6 @@ namespace AbbContentEditor.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Abb_UserClaims",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    ClaimType = table.Column<string>(type: "text", nullable: true),
-                    ClaimValue = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Abb_UserClaims", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Abb_UserClaims_Abb_AppUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Abb_AppUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Abb_UserLogins",
-                columns: table => new
-                {
-                    LoginProvider = table.Column<string>(type: "text", nullable: false),
-                    ProviderKey = table.Column<string>(type: "text", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
-                    UserId = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Abb_UserLogins", x => new { x.LoginProvider, x.ProviderKey });
-                    table.ForeignKey(
-                        name: "FK_Abb_UserLogins_Abb_AppUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Abb_AppUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Abb_Users",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    FirstName = table.Column<string>(type: "text", nullable: false),
-                    LastName = table.Column<string>(type: "text", nullable: false),
-                    RegDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Role = table.Column<int>(type: "integer", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Abb_Users", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Abb_Users_Abb_AppUsers_Id",
-                        column: x => x.Id,
-                        principalTable: "Abb_AppUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Abb_UserTokens",
-                columns: table => new
-                {
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    LoginProvider = table.Column<string>(type: "text", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Value = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Abb_UserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
-                    table.ForeignKey(
-                        name: "FK_Abb_UserTokens_Abb_AppUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Abb_AppUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "WordCollections",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    WordsCollection = table.Column<JsonDocument>(type: "jsonb", nullable: true),
-                    AuthorId = table.Column<string>(type: "text", nullable: false),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    PubDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WordCollections", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_WordCollections_Abb_AppUsers_AuthorId",
-                        column: x => x.AuthorId,
-                        principalTable: "Abb_AppUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "WordHistories",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Word = table.Column<string>(type: "text", nullable: false),
-                    Correct = table.Column<bool>(type: "boolean", nullable: false),
-                    IdentityUserId = table.Column<string>(type: "text", nullable: false),
-                    AnswerTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WordHistories", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_WordHistories_Abb_AppUsers_IdentityUserId",
-                        column: x => x.IdentityUserId,
-                        principalTable: "Abb_AppUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Abb_RoleClaims",
                 columns: table => new
                 {
@@ -246,6 +123,47 @@ namespace AbbContentEditor.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Abb_UserClaims",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Abb_UserClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Abb_UserClaims_Abb_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Abb_Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Abb_UserLogins",
+                columns: table => new
+                {
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Abb_UserLogins", x => new { x.LoginProvider, x.ProviderKey });
+                    table.ForeignKey(
+                        name: "FK_Abb_UserLogins_Abb_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Abb_Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Abb_UserRoles",
                 columns: table => new
                 {
@@ -256,15 +174,80 @@ namespace AbbContentEditor.Migrations
                 {
                     table.PrimaryKey("PK_Abb_UserRoles", x => new { x.UserId, x.RoleId });
                     table.ForeignKey(
-                        name: "FK_Abb_UserRoles_Abb_AppUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Abb_AppUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_Abb_UserRoles_Abb_Roles_RoleId",
                         column: x => x.RoleId,
                         principalTable: "Abb_Roles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Abb_UserRoles_Abb_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Abb_Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Abb_UserTokens",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Abb_UserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
+                    table.ForeignKey(
+                        name: "FK_Abb_UserTokens_Abb_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Abb_Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WordCollections",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    WordsCollection = table.Column<JsonDocument>(type: "jsonb", nullable: true),
+                    AuthorId = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    PubDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WordCollections", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WordCollections_Abb_Users_AuthorId",
+                        column: x => x.AuthorId,
+                        principalTable: "Abb_Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WordHistories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Word = table.Column<string>(type: "text", nullable: false),
+                    Correct = table.Column<bool>(type: "boolean", nullable: false),
+                    IdentityUserId = table.Column<string>(type: "text", nullable: false),
+                    AnswerTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WordHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WordHistories_Abb_Users_IdentityUserId",
+                        column: x => x.IdentityUserId,
+                        principalTable: "Abb_Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -307,18 +290,7 @@ namespace AbbContentEditor.Migrations
             migrationBuilder.InsertData(
                 table: "Blogs",
                 columns: new[] { "Id", "CategoryId", "ImageUrl", "IsDeleted", "Preview", "PubDate", "TheText", "Title", "UpdDate" },
-                values: new object[] { 1, 1, "imageUrl", false, "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…", null, "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.", "My first blog post from dbcontext migration", new DateTime(2025, 5, 4, 14, 58, 5, 952, DateTimeKind.Utc).AddTicks(8489) });
-
-            migrationBuilder.CreateIndex(
-                name: "EmailIndex",
-                table: "Abb_AppUsers",
-                column: "NormalizedEmail");
-
-            migrationBuilder.CreateIndex(
-                name: "UserNameIndex",
-                table: "Abb_AppUsers",
-                column: "NormalizedUserName",
-                unique: true);
+                values: new object[] { 1, 1, "imageUrl", false, "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…", null, "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.", "My first blog post from dbcontext migration", new DateTime(2025, 5, 10, 6, 39, 32, 195, DateTimeKind.Utc).AddTicks(4566) });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Abb_RoleClaims_RoleId",
@@ -345,6 +317,17 @@ namespace AbbContentEditor.Migrations
                 name: "IX_Abb_UserRoles_RoleId",
                 table: "Abb_UserRoles",
                 column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "EmailIndex",
+                table: "Abb_Users",
+                column: "NormalizedEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "UserNameIndex",
+                table: "Abb_Users",
+                column: "NormalizedUserName",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Blogs_CategoryId",
@@ -378,9 +361,6 @@ namespace AbbContentEditor.Migrations
                 name: "Abb_UserRoles");
 
             migrationBuilder.DropTable(
-                name: "Abb_Users");
-
-            migrationBuilder.DropTable(
                 name: "Abb_UserTokens");
 
             migrationBuilder.DropTable(
@@ -405,7 +385,7 @@ namespace AbbContentEditor.Migrations
                 name: "Categories");
 
             migrationBuilder.DropTable(
-                name: "Abb_AppUsers");
+                name: "Abb_Users");
         }
     }
 }

@@ -47,10 +47,10 @@ namespace AbbContentEditor.Controllers
         public List<UserDto> GetUserList()
         {
 
-            var users = _abbAppContext.Users.ToList();
+            var users = _userManager.Users.ToList();
             
 
-            var usersDto = _mapper.Map<List<IdentityUser>, List<UserDto>>(users);
+            var usersDto = _mapper.Map<List<AbbAppUser>, List<UserDto>>(users);
 
             return usersDto;
         }

@@ -13,7 +13,7 @@ namespace AbbContentEditor
             CreateMap<Blog, BlogListItemUser>();
             CreateMap<WordHistory, WordHistoryDto>(); //.ForMember(dest => dest.UserId, act => act.MapFrom(src=> src.IdentityUser.Id));
             CreateMap<WordHistoryDto, WordHistory>().ForMember(dest => dest.IdentityUser, opt => opt.Ignore());
-            CreateMap<IdentityUser, UserDto>();
+            CreateMap<AbbAppUser, UserDto>();
         }
     }
 }

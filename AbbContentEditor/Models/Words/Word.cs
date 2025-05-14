@@ -23,7 +23,7 @@ namespace AbbContentEditor.Models.Words
 
         private string? WordsCollectionString { get; set; }
         // public JsonDocument WordsCollection { get; set; }
-        public IdentityUser Author { get; set; }
+        public AbbAppUser Author { get; set; }
     }
 
 }
