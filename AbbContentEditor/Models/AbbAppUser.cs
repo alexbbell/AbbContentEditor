@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using NLog.LayoutRenderers;
-using System.ComponentModel.DataAnnotations;
 
 namespace AbbContentEditor.Models
 {

@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AbbContentEditor.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class newroles : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,6 +20,7 @@ namespace AbbContentEditor.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
                     Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
@@ -290,7 +291,7 @@ namespace AbbContentEditor.Migrations
             migrationBuilder.InsertData(
                 table: "Blogs",
                 columns: new[] { "Id", "CategoryId", "ImageUrl", "IsDeleted", "Preview", "PubDate", "TheText", "Title", "UpdDate" },
-                values: new object[] { 1, 1, "imageUrl", false, "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…", null, "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.", "My first blog post from dbcontext migration", new DateTime(2025, 5, 10, 6, 39, 32, 195, DateTimeKind.Utc).AddTicks(4566) });
+                values: new object[] { 1, 1, "imageUrl", false, "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…", null, "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.", "My first blog post from dbcontext migration", new DateTime(2025, 5, 19, 8, 17, 55, 54, DateTimeKind.Utc).AddTicks(4699) });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Abb_RoleClaims_RoleId",

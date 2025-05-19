@@ -3,7 +3,6 @@ using AbbContentEditor.Data;
 using AbbContentEditor.Data.Repositories;
 using AbbContentEditor.Data.UoW;
 using AbbContentEditor.Helpers;
-using AbbContentEditor.Middleware;
 using AbbContentEditor.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -139,14 +138,14 @@ try
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 
-    builder.Services.AddIdentity<AbbAppUser, IdentityRole>(options =>
+    builder.Services.AddIdentity<AbbAppUser, AbbAppUserRole>(options =>
     {
         options.User.RequireUniqueEmail = false;
         options.SignIn.RequireConfirmedAccount = false; // for test only!
         options.SignIn.RequireConfirmedEmail = false;
         options.SignIn.RequireConfirmedPhoneNumber = false;
     })
-    .AddRoles<IdentityRole>()
+    .AddRoles<AbbAppUserRole>()
     .AddEntityFrameworkStores<AbbAppContext>()
     .AddDefaultTokenProviders();
 
@@ -214,8 +213,8 @@ try
         var scopedProvider = scope.ServiceProvider;
         var userManager = scopedProvider.GetRequiredService<UserManager<AbbAppUser>>();
         var userStore = scopedProvider.GetRequiredService<IUserStore<AbbAppUser>>();
-
-        var roleManager = scopedProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        
+        var roleManager = scopedProvider.GetRequiredService<RoleManager<AbbAppUserRole>>();
         CreateDefaultData createDefaultData = new CreateDefaultData(userManager, userStore, roleManager);
         await createDefaultData.InitializeAsync();
         }

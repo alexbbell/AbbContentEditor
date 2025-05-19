@@ -10,16 +10,17 @@ namespace AbbContentEditor.Data
     public class CreateDefaultData
     {
         private readonly UserManager<AbbAppUser> _userManager ;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<AbbAppUserRole> _roleManager;
         private readonly PasswordHasher<AbbAppUser> _passwordHasher = new PasswordHasher<AbbAppUser>();
         private readonly IUserStore<AbbAppUser> _userStore;
         public CreateDefaultData(UserManager<AbbAppUser> userManager,
             IUserStore<AbbAppUser> userStore,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<AbbAppUserRole> roleManager)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _userStore = userStore;
+
             //if( context.Database.IsSqlite())
             //{
             //    Batteries.Init();
@@ -39,8 +40,18 @@ namespace AbbContentEditor.Data
         public async Task CreateDefaultUser ()
         {
 
-            var roles = new[] { UserRoles.Guest.ToString(), UserRoles.Contributor.ToString(),
-            UserRoles.Admin.ToString()};
+            var roles = new[] { UserRoles.Guest.ToString(), UserRoles.Contributor.ToString(), UserRoles.Admin.ToString()};
+            
+            foreach(var role in roles)
+            {
+                if (!await _roleManager.RoleExistsAsync(role.ToString()))
+                {
+                    await _roleManager.CreateAsync(new AbbAppUserRole { Id = Guid.NewGuid().ToString(), 
+                        Name = role.ToString(),
+                        NormalizedName = role.ToUpperInvariant(),
+                        Description = $"{role.ToString()} role" });
+                }
+            }
             Console.WriteLine("Method to create a user");
             var newUser = Activator.CreateInstance<AbbAppUser>();
             try
@@ -50,24 +61,34 @@ namespace AbbContentEditor.Data
                         FirstName = "Aleksei", 
                         LastName = "Beliaev",
                         Email = "alexey@beliaeff.ru",
-                        //NormalizedUserName = "ALEXEY@BELIAEFF.RU",
-                        //NormalizedEmail = "ALEXEY@BELIAEFF.RU",
-                        EmailConfirmed = true,
-                        LockoutEnabled = false,
-                    
                         };
-                //var hashedPassword = _passwordHasher.HashPassword(user, Environment.GetEnvironmentVariable("DEFAULTPASS"));
                 var hashedPassword = Environment.GetEnvironmentVariable("DEFAULTPASS");
                 newUser.FirstName = user.FirstName;
                 newUser.LastName = user.LastName;
                 newUser.RegDate = DateTime.UtcNow;
                 await _userStore.SetUserNameAsync(newUser, user.UserName, CancellationToken.None);
-                
-                                
+                await _userManager.SetEmailAsync(newUser, user.Email);
+  
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+
+                await _userManager.ConfirmEmailAsync(newUser, token);
+
                 var result = await _userManager.CreateAsync(newUser, hashedPassword);
 
                 if(result.Succeeded) Console.WriteLine("User is created");
-            } catch(Exception ex)
+                var addRoleResult = await _userManager.AddToRoleAsync(newUser, nameof(UserRoles.Admin));
+
+                if (addRoleResult.Succeeded)
+                {
+                    Console.WriteLine($"User {newUser.Email} is added to the Role {nameof(UserRoles.Admin)}");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to assign role: {string.Join(", ", addRoleResult.Errors.Select(e => e.Description))}");
+
+                }
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine($"error for User {ex.Message}");
             }

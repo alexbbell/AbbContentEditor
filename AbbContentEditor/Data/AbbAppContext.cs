@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AbbContentEditor.Data
 {
     //public class AbbAppContext : DbContext
-    public class AbbAppContext : IdentityDbContext<AbbAppUser>
+    public class AbbAppContext : IdentityDbContext<AbbAppUser, AbbAppUserRole, string>
     {
         //public DbSet<CustomUser> CustomUsers { get; set; }
 
@@ -50,7 +50,7 @@ namespace AbbContentEditor.Data
             string prefix = "Abb_";
             modelBuilder.Entity<AbbAppUser>(entity => { entity.ToTable(name: $"{prefix}Users"); });
             //modelBuilder.Entity<IdentityUser>(entity => { entity.ToTable(name: $"{prefix}AppUsers"); });
-            modelBuilder.Entity<IdentityRole>(entity => { entity.ToTable(name: $"{prefix}Roles"); });
+            modelBuilder.Entity<AbbAppUserRole>(entity => { entity.ToTable(name: $"{prefix}Roles"); });
             modelBuilder.Entity<IdentityUserRole<string>>(entity => { entity.ToTable($"{prefix}UserRoles"); });
             modelBuilder.Entity<IdentityUserClaim<string>>(entity => { entity.ToTable($"{prefix}UserClaims"); });
             modelBuilder.Entity<IdentityUserLogin<string>>(entity => { entity.ToTable($"{prefix}UserLogins"); });
