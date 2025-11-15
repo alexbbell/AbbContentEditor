@@ -14,6 +14,7 @@ namespace AbbContentEditor.Data.UoW
         public Repository<BankOperation> bankOperationRepository {  get; set; }
         public Repository<WordHistory> wordHistoryRepository { get; set; }
         public Repository<WordCollection> wordCollectionRepository { get; set; }
+        public Repository<SiteRequest> siteRequestsRepository { get; set; }
         public ILogger<IUnitOfWork> _logger {  get; set; }
 
         public UnitOfWork(AbbAppContext context, ILogger<IUnitOfWork> logger)
@@ -24,6 +25,7 @@ namespace AbbContentEditor.Data.UoW
             bankOperationRepository  = new Repository<BankOperation>(_context);
             wordHistoryRepository = new Repository<WordHistory>(_context);
             wordCollectionRepository = new Repository<WordCollection>(_context);
+            siteRequestsRepository = new Repository<SiteRequest>(_context);
             _logger = logger;
         }
 

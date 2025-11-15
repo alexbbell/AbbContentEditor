@@ -1,5 +1,6 @@
 ﻿using AbbContentEditor.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace AbbContentEditor.Data.Repositories
 {
@@ -38,13 +39,45 @@ namespace AbbContentEditor.Data.Repositories
                 query = filter(query); // Apply the filter
             }
 
-
             // Apply pagination
             return query
                 .Skip((pageNumber - 1) * pageSize) // Skip the previous pages' records
                 .Take(pageSize); // Take only the pageSize records
         }
 
+
+
+        public PagedItemResult<T> FetchItems<TKey>(
+            Func<IQueryable<T>, 
+            IQueryable<T>> filter = null,
+             Expression<Func<T, TKey>> orderBy = null,
+            bool descending = false,
+            int pageNumber = 1, int pageSize = 10)
+        {
+            IQueryable<T> query = _dbSet;
+
+            if (filter != null)
+            {
+                query = filter(query); // Apply the filter
+            }
+            var totalCount = query.Count(); // total records before paging
+            if (orderBy != null)
+                query = descending ? query.OrderByDescending(orderBy)
+                                   : query.OrderBy(orderBy);
+
+
+            var pagedQuery = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+            return new PagedItemResult<T>
+            {
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                Query = pagedQuery
+            };
+
+        }
         // Get a single entity by its primary key (assuming the key is int)
         public async Task<T> GetByIdAsync(int id)
         {

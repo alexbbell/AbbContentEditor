@@ -1,4 +1,7 @@
-﻿namespace AbbContentEditor.Data.Repositories
+﻿using AbbContentEditor.Models;
+using System.Linq.Expressions;
+
+namespace AbbContentEditor.Data.Repositories
 {
     public interface IRepository<T> where T : class
     {
@@ -7,6 +10,12 @@
 
         IQueryable<T> Find(
                   Func<IQueryable<T>, IQueryable<T>> filter = null,
+                  int pageNumber = 1,
+                  int pageSize = 10);
+
+        PagedItemResult<T> FetchItems<TKey>(Func<IQueryable<T>, IQueryable<T>> filter = null,
+              Expression<Func<T, TKey>> orderBy = null,
+            bool descending = false,
                   int pageNumber = 1,
                   int pageSize = 10);
         Task<T> GetByIdAsync(int id);

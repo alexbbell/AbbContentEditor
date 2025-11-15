@@ -20,6 +20,8 @@ namespace AbbContentEditor.Data
         public virtual DbSet<WordCollection> WordCollections { get; set; }
         public virtual DbSet<WordHistory> WordHistories { get; set; }
 
+        public virtual DbSet<SiteRequest> SiteRequests { get; set; }
+
         //public AbbAppContext(IConfiguration configuration) : base()
         public AbbAppContext(DbContextOptions<AbbAppContext> options) : base(options)    {  }
 

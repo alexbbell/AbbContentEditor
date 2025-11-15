@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /AbbContentEditor/appsettings.json
 /AbbContentEditor/appsettings.Development.json
+/AbbContentEditor/appsettings.txt

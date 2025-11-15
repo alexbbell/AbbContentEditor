@@ -3,6 +3,7 @@ using AbbContentEditor.Data;
 using AbbContentEditor.Data.Repositories;
 using AbbContentEditor.Data.UoW;
 using AbbContentEditor.Helpers;
+using AbbContentEditor.Middleware;
 using AbbContentEditor.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -11,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
 using System.Text;
+using System.Threading.RateLimiting;
 
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -37,15 +39,14 @@ try
 
     string  connStr = builder.Configuration.GetConnectionString("PGSQLConnectionString");
     //string connStr = builder.Configuration.GetConnectionString("SQLiteConnectionString"); 
-
-
-        //// options.UseSqlite(connStr);
+    //// options.UseSqlite(connStr);
 
     builder.Services.AddDbContext<AbbAppContext>(options =>
     {
-        //options.UseSqlite(connStr);
+        /// // options.UseSqlite(connStr);
+         
          options.UseNpgsql(connStr);
-        options.LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
+         options.LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Error)
         .EnableSensitiveDataLogging();
         //options.UseNpgsql(connStr, npgsqlOptions =>
         //{
@@ -68,7 +69,7 @@ try
     var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
     Console.WriteLine(env.IsDevelopment());
-    string allowedHosts = (env.IsDevelopment()) ? "http://localhost:3000, http://localhost:3001" : "https://alexey.beliaeff.ru";
+    string allowedHosts = (env.IsDevelopment()) ? "http://localhost:3000, http://localhost:3001" : "http://localhost:5173/, https://alexey.beliaeff.ru";
     
 
     builder.Services.AddCors(options =>
@@ -116,6 +117,31 @@ try
 
     });
     builder.Services.AddTransient<CustomEmailConfirmationTokenProvider<AbbAppUser>>();
+
+    builder.Services.AddRateLimiter(options =>
+    {
+        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        options.OnRejected = (ctx, _) =>
+        {
+            var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>()
+                          .CreateLogger("RateLimiter");
+            logger.LogWarning("429 for {IP} on {Path}",
+                ctx.HttpContext.Connection.RemoteIpAddress?.ToString(),
+                ctx.HttpContext.Request.Path);
+            return ValueTask.CompletedTask;
+        };
+
+        options.AddPolicy("contact-limit", http =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 5,                 // super low for testing
+                    Window = TimeSpan.FromSeconds(30),
+                    QueueLimit = 1,                  // no queue -> instant 429
+                    AutoReplenishment = true
+                }));
+    });
 
     //builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
     builder.Services.AddAutoMapper(typeof(Program).Assembly);
@@ -184,7 +210,10 @@ try
     });
 
     var app = builder.Build();
+
     //app.UseMiddleware<TokenExpirationMiddleware>();
+    app.UseMiddleware<RequestLoggingMiddleware>();
+
     app.UseCors(MyAllowSpecificOrigins);
     app.UseRouting();
 
@@ -200,6 +229,8 @@ try
     app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
+
+    app.UseRateLimiter();
 
     app.MapControllers();
 

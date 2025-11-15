@@ -10,6 +10,8 @@ namespace AbbContentEditor.Data.UoW
         Repository<WordHistory> wordHistoryRepository { get; set; }
         Repository<BankOperation> bankOperationRepository { get; set; }
         Repository<WordCollection> wordCollectionRepository { get; set; }
+        Repository<SiteRequest> siteRequestsRepository { get; set; }
+
         BlogRepository blogRepository { get; }
         Task<bool> Commit();
         Task Rollback();
