@@ -61,7 +61,7 @@ try
     builder.Services.AddScoped<AbbFileRepository>();
 
     IHostEnvironment env = builder.Environment;
-    var conf = builder.Configuration
+    builder.Configuration
         .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
 
@@ -69,8 +69,12 @@ try
     var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
     Console.WriteLine(env.IsDevelopment());
-    string allowedHosts = (env.IsDevelopment()) ? "http://localhost:3000, http://localhost:3001" : "http://localhost:5173/, https://alexey.beliaeff.ru";
+    var corsOrigins = builder.Configuration
+    .GetSection("CorsOrigins")
+    .Get<string[]>() ?? Array.Empty<string>();
     
+    
+
 
     builder.Services.AddCors(options =>
     {
@@ -78,13 +82,7 @@ try
             policy =>
             {
                 policy
-                .WithOrigins("http://localhost:3000", 
-                        "http://localhost:3001",
-                        "http://localhost:5173",
-                        "http://localhost:5000", 
-                        "https://localhost:5001", 
-                        "https://dev.beliaeff.ru",
-                        "https://api.beliaeff.ru")
+                .WithOrigins(corsOrigins)
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
