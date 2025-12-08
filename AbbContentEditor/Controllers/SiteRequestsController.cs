@@ -131,5 +131,19 @@ namespace AbbContentEditor.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpDelete]
+        [Route("{id:int}")]
+        public async Task<IActionResult> DeleteItem([FromRoute] int id)
+        {
+            if (id == 0) return BadRequest();
+
+            var item = await _unitOfWork.siteRequestsRepository.GetByIdAsync(id);
+            if (item == null) return NotFound();
+            await _unitOfWork.siteRequestsRepository.DeleteAsync(item);
+            await _unitOfWork.Commit();
+            return Ok(JsonSerializer.Serialize(item));
+
+        }
     }
 }
