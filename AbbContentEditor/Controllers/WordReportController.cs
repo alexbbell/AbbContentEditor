@@ -39,10 +39,16 @@ namespace AbbContentEditor.Controllers
         {
             var user = await _userManager.FindByNameAsync(User.Identity.Name);
             if (user == null) return BadRequest();
-
+            var userId = user?.Id;
+            System.Diagnostics.Debug.WriteLine($"User ID is: '{userId}'");
+            
             try
             {
-                var r = _unitOfWork.wordHistoryRepository.Find(x => x.Where(x => x.IdentityUserId == user.Id), 1, 10).ToList();// Find(x => x.Where(x => x.Author.Id == t)); ;
+
+                var r = _unitOfWork.wordHistoryRepository
+                    .Find(q => q.Where(x => x.IdentityUserId == user.Id), 1, int.MaxValue)
+                    .ToList();
+                // Find(x => x.Where(x => x.Author.Id == t)); ;
                 List<WordHistoryDto> results = _mapper.Map<List<WordHistoryDto>>(r);
 
                 int correntResults = results.Count(x => x.Correct);

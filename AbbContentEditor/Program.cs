@@ -32,6 +32,7 @@ try
     builder.Services.AddSwaggerGen();
 
 
+
     // NLog: Setup NLog for Dependency injection
     builder.Logging.ClearProviders();
     builder.Logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
@@ -47,7 +48,9 @@ try
          
          options.UseNpgsql(connStr);
          options.LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Error)
-        .EnableSensitiveDataLogging();
+        .EnableSensitiveDataLogging().
+        ConfigureWarnings(warnings =>
+               warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
         //options.UseNpgsql(connStr, npgsqlOptions =>
         //{
         //    npgsqlOptions.EnableRetryOnFailure(
@@ -69,11 +72,9 @@ try
     var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
     Console.WriteLine(env.IsDevelopment());
-    var corsOrigins = builder.Configuration
-    .GetSection("CorsOrigins")
-    .Get<string[]>() ?? Array.Empty<string>();
-    
-    
+    var corsOrigins = builder.Configuration.GetSection("CorsOrigins")
+                .Get<string[]>() ?? Array.Empty<string>();
+      
 
 
     builder.Services.AddCors(options =>
@@ -89,7 +90,9 @@ try
             });
     });
 
-    Console.WriteLine(MyAllowSpecificOrigins.ToString());
+
+
+
     builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("JWTSettings"));
     var secretKey = builder.Configuration.GetSection("JWTSettings:SecretKey").Value;
     var issuer = builder.Configuration.GetSection("JWTSettings:Issuer").Value;
@@ -197,7 +200,8 @@ try
             ValidAudience = audience,
             ValidateLifetime = true,
             IssuerSigningKey = signingKey,
-            ValidateIssuerSigningKey = true
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero // Optional: Set clock skew to zero for testing purposes
         };
     });
 
@@ -207,6 +211,11 @@ try
         options.AddPolicy("Guest", policy => policy.RequireRole("Guest"));
     });
 
+    // Configure AddOpenApi to output OpenAPI 3.0 instead of 3.1
+    builder.Services.AddOpenApi(options =>
+    {
+        options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0;
+    });
     var app = builder.Build();
 
     //app.UseMiddleware<TokenExpirationMiddleware>();
@@ -215,13 +224,20 @@ try
     app.UseCors(MyAllowSpecificOrigins);
     app.UseRouting();
 
+
+    
     Console.WriteLine("Dev or not");
     Console.WriteLine(app.Environment.IsDevelopment());
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
-        app.UseSwaggerUI();
+        app.MapOpenApi();
+        app.UseSwaggerUI(c =>
+        {
+            // Change /openapi/v1.json to /swagger/v1/swagger.json
+            c.SwaggerEndpoint("/openapi/v1.json", "API v1");
+        });
     }
 
     app.UseHttpsRedirection();

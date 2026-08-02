@@ -6,6 +6,7 @@ using AbbContentEditor.Models.Words;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using NLog.Web.LayoutRenderers;
 using System.Text.Json;
 
 
@@ -42,7 +43,19 @@ namespace AbbContentEditor.Controllers
             return BadRequest("No wordhistory added");
 
         }
+        [HttpGet("getdate")]
+        public async Task<ActionResult> GetDate()
+        {
+            DateTime now = DateTime.UtcNow;
+            var firstDay = new DateTime(now.Year, now.Month, 1);
+            var nextMonth = firstDay.AddMonths(1);
+            var lastDay = nextMonth.AddSeconds(-1);
+            Console.WriteLine(lastDay);
+            DateTime endDate = new DateTime(now.Year, now.Month, 1).AddMonths(1).AddSeconds(-1);
+            Console.WriteLine(endDate);
 
+            return BadRequest("No wordhistory added");
+        }
         private async Task<bool> PopulateWordHistory()
         {
             //Check this generation later

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace AbbContentEditor.Models.Words
 {

@@ -5,8 +5,8 @@ namespace AbbContentEditor.Models
     // I don't really need if I use this model later
     public class AbbAppUser : IdentityUser
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
 
         public DateTime RegDate { get; set; }
         public Roles? Role { get; set; }

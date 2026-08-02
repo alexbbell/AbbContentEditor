@@ -42,56 +42,70 @@ namespace AbbContentEditor.Controllers
         [HttpPost]
         [AllowAnonymous]
         [Route("RegisterUser")]
-        public async Task<IActionResult> Register(RegisterRequestModel model)
+        public async Task<IActionResult> Register([FromBody] RegisterRequestModel model)
         {
+            // ASP.NET Core [ApiController] handles ModelState.IsValid automatically,
+            // but explicit check kept here if standard Controllerbase is used:
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
-                if (ModelState.IsValid)
+                var user = new AbbAppUser
                 {
-                    AbbAppUser user = new AbbAppUser { UserName = model.Email, Email = model.Email, PasswordHash = model.Password };
-                    var result = await _userManager.CreateAsync(user, model.Password);
-                    var addRole = await _userManager.AddToRoleAsync(user, UserRoles.Guest.ToString());
+                    UserName = model.Email,
+                    Email = model.Email
+                };
 
-                    if (result.Succeeded && addRole.Succeeded)
-                    {
-                        // Handle successful registration
-                        _logger.LogInformation($"User {model.Email} is successfully registered");
-                        return new OkObjectResult("User Register Successfully ");
-                    }
-                    else
-                    {
-                        _logger.LogError($"User {model.Email} could not register.");
-                        string err = string.Join(",", result.Errors.Select(x=> x.Description));
+                // Create user (UserManager handles password hashing internally)
+                var createResult = await _userManager.CreateAsync(user, model.Password);
+                if (!createResult.Succeeded)
+                {
+                    var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                    _logger.LogWarning("User registration failed for {Email}: {Errors}", model.Email, errors);
 
-                        return new BadRequestObjectResult(
-                            new ProblemDetails
-                            {
-                                Status = StatusCodes.Status400BadRequest,
-                                Title = "Bad Request",
-                                Detail = $"There was an error processing your request, please try again. {err}",
-                            }
-                            );
-                    }
+                    return BadRequest(new ProblemDetails
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Title = "Registration Failed",
+                        Detail = errors
+                    });
                 }
+
+                // Add user to role
+                var roleResult = await _userManager.AddToRoleAsync(user, UserRoles.Guest.ToString());
+                if (!roleResult.Succeeded)
+                {
+                    // Rollback user creation if role assignment fails
+                    await _userManager.DeleteAsync(user);
+
+                    var roleErrors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+                    _logger.LogError("Role assignment failed for {Email}: {Errors}", model.Email, roleErrors);
+
+                    return BadRequest(new ProblemDetails
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Title = "Registration Failed",
+                        Detail = "Could not assign default role to user."
+                    });
+                }
+
+                _logger.LogInformation("User {Email} successfully registered.", model.Email);
+                return Ok(new { Message = "User registered successfully." });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
-                return new BadRequestObjectResult(
-                    new ProblemDetails
-                    {
-                        Status = StatusCodes.Status400BadRequest,
-                        Title = "Bad Request",
-                        Detail = $"There was an error processing your request, please try again. {ex.Message}"
-                    });
-                throw;
+                _logger.LogError(ex, "An unhandled exception occurred while registering user {Email}", model.Email);
+
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                {
+                    Status = StatusCodes.Status500InternalServerError,
+                    Title = "Server Error",
+                    Detail = "An unexpected error occurred. Please try again later."
+                });
             }
-            return new BadRequestObjectResult(new ProblemDetails
-            {
-                Status = StatusCodes.Status400BadRequest,
-                Title = "Bad Request",
-                Detail = "Something is wrong"
-            });
         }
 
 

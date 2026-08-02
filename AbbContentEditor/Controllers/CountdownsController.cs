@@ -100,29 +100,28 @@ namespace AbbContentEditor.Controllers
         {
             // var username = data.UserName;
 
-            var expClaim = User.Claims.FirstOrDefault(c => c.Type == "exp")?.Value;
-            if (expClaim != null && long.TryParse(expClaim, out long exp))
-            {
-                var expiryDate = DateTimeOffset.FromUnixTimeSeconds(exp);
-                if (expiryDate < DateTimeOffset.UtcNow)
-                {
-                    return Unauthorized("Token expired");
-                }
-            }
-            AbbAppUser? username = await _userManager.FindByNameAsync(userName: User.Identity.Name);
-            if(username == null)  return BadRequest();
+            //var expClaim = User.Claims.FirstOrDefault(c => c.Type == "exp")?.Value;
+            //if (expClaim != null && long.TryParse(expClaim, out long exp))
+            //{
+            //    var expiryDate = DateTimeOffset.FromUnixTimeSeconds(exp);
+            //    if (expiryDate < DateTimeOffset.UtcNow)
+            //    {
+            //        return Unauthorized("Token expired");
+            //    }
+            //}
+            var user = await _userManager.FindByNameAsync(User.GetUsername()!);
+            if (user == null) return BadRequest();
+            
             string countDownSecondsStr = _configuration.GetSection("GameSettings:CountDownSeconds").Value??"1000";
 
-            if (!int.TryParse(countDownSecondsStr, out int seconds))
-            {
-                seconds = 1000; // Default value in case of parsing failure
-            }
+            int seconds = _configuration.GetValue<int>("GameSettings:CountDownSeconds", 1000);
 
-            
-            var existedCountdown = _context.Countdowns.FirstOrDefault(x=>x.Id == new Guid(username.Id));
+
+            //var existedCountdown = _context.Countdowns.FirstOrDefault(x=>x.Id == new Guid(username.Id));
+            var existedCountdown = await _context.Countdowns.FirstOrDefaultAsync(x => x.Id.ToString() == user.Id);
             if (existedCountdown == null)
             {
-                existedCountdown = new Countdown { Id = new Guid(username.Id), Name = username.UserName, CreatedAt = DateTime.UtcNow, 
+                existedCountdown = new Countdown { Id = new Guid(user.Id), Name = user.UserName, CreatedAt = DateTime.UtcNow, 
                     EndTime = data.Action.Equals(CountDownAction.Start.ToString(), StringComparison.InvariantCultureIgnoreCase) ? DateTime.UtcNow.AddSeconds(seconds) : DateTime.MinValue
                 };
                 _context.Countdowns.Add(existedCountdown );
@@ -135,7 +134,7 @@ namespace AbbContentEditor.Controllers
             }
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCountdown", new { username = username }, existedCountdown);
+            return CreatedAtAction("GetCountdown", new { username = user.UserName }, existedCountdown);
         }
 
         // DELETE: api/Countdowns/5
