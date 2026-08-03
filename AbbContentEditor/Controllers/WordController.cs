@@ -78,6 +78,7 @@ namespace AbbContentEditor.Controllers
             };
             var wordsList = collection.Words.Select(w => new Word
             {
+                Id = w.Id,
                 Translate1 = w.Translate1,
                 Translate2 = w.Translate2,
                 Translate3 = w.Translate3,
@@ -117,6 +118,7 @@ namespace AbbContentEditor.Controllers
             };
             var wordsList = collection.Words.Select(w => new Word
             {
+                Id = w.Id,
                 Translate1 = w.Translate1,
                 Translate2 = w.Translate2,
                 Translate3 = w.Translate3,
