@@ -162,6 +162,11 @@ namespace AbbContentEditor.Controllers
                     var accessToken = _tokenManager.GenerateAccessToken(model.Email, userRoles);
                     AuthenticationResponse tokenApiModel = new AuthenticationResponse()
                     {
+                        User = new UserDto()
+                        {
+                            Email = user.Email,
+                            Id = new Guid(user.Id)
+                        },
                         AccessToken = accessToken,
                         RefreshToken = refreshToken
                     };

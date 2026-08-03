@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Primitives;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace AbbContentEditor.Models.Words
 {

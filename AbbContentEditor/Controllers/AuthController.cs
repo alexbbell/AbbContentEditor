@@ -58,31 +58,39 @@ namespace AbbContentEditor.Controllers
         [HttpPost]
         public async Task<IActionResult> Authenticate([FromBody] AuthRequest authRequest)
         {
-            PasswordHasher<IdentityUser> hasher = new PasswordHasher<IdentityUser>();
+            // 1. Look up user (Try email first, or fall back to username if needed)
+            var user = await _userManager.FindByEmailAsync(authRequest.Email);
 
-            //var isUser = _abbAppContext.Users.FirstOrDefault(u => u.Email.Equals(authRequest.Username));
-            var isUser = await _userManager.FindByEmailAsync(authRequest.Username);
-            var roles = await _userManager.GetRolesAsync(isUser);
-
-            if (isUser == null)
+            // 2. Guard clause: Check null BEFORE performing any operations on 'user'
+            if (user == null)
             {
-                _logger.LogError("Wrong authentication.");
-                return Unauthorized();
-            }
-            var result = _userManager.PasswordHasher.VerifyHashedPassword(isUser, isUser.PasswordHash, authRequest.Password);
-            if (result == PasswordVerificationResult.Failed)
-            {
-                return new BadRequestObjectResult(new { Message = "Login failed" });
+                _logger.LogError($"Authentication failed: User '{authRequest.Email}' not found.");
+                return Unauthorized(new { Message = "Invalid username or password" });
             }
 
-            _logger.LogInformation($"Suceesfully logged in {authRequest.Username}");
-            return Ok(
-                new AuthenticationResponse
+            // 3. Verify password using Identity's built-in helper
+            var isPasswordValid = await _userManager.CheckPasswordAsync(user, authRequest.Password);
+            if (!isPasswordValid)
+            {
+                _logger.LogWarning($"Authentication failed: Invalid password for '{authRequest.Email}'.");
+                return BadRequest(new { Message = "Invalid username or password" });
+            }
+
+            // 4. Safely retrieve roles AFTER confirming user exists
+            var roles = await _userManager.GetRolesAsync(user);
+
+            _logger.LogInformation($"Successfully logged in {user.UserName}");
+
+            return Ok(new AuthenticationResponse
+            {
+                User = new UserDto()
                 {
-                    AccessToken = _tokenManager.GenerateAccessToken(isUser.UserName, roles),
-                    RefreshToken = _tokenManager.GenerateRefreshToken()
-                });
-
+                    Email= user.Email,
+                    Id = new Guid(user.Id)
+                },
+                AccessToken = _tokenManager.GenerateAccessToken(user.UserName, roles),
+                RefreshToken = _tokenManager.GenerateRefreshToken()
+            });
         }
 
 
