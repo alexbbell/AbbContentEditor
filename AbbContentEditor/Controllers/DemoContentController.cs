@@ -1,6 +1,7 @@
 ﻿using AbbContentEditor.Data;
 using AbbContentEditor.Data.Repositories;
 using AbbContentEditor.Data.UoW;
+using AbbContentEditor.Helpers;
 using AbbContentEditor.Models;
 using AbbContentEditor.Models.Words;
 using AutoMapper;
@@ -55,6 +56,15 @@ namespace AbbContentEditor.Controllers
             Console.WriteLine(endDate);
 
             return BadRequest("No wordhistory added");
+        }
+
+        [HttpGet]
+        [Route("sendMail")]
+        public async Task<ActionResult> SendMail()
+        {
+            EmailKitSender emailKitSender = new EmailKitSender();
+            await emailKitSender.SendEmailAsync("beliaeff@gmail.com", "This is a test email sent from the .NET application.");
+            return Ok("Email sent successfully.");
         }
         private async Task<bool> PopulateWordHistory()
         {
