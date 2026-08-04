@@ -1,4 +1,4 @@
-﻿namespace AbbContentEditor.Models
+﻿namespace AbbContentEditor.Models.Account
 {
 
 

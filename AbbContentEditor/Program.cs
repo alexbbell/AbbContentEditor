@@ -5,6 +5,7 @@ using AbbContentEditor.Data.UoW;
 using AbbContentEditor.Helpers;
 using AbbContentEditor.Middleware;
 using AbbContentEditor.Models;
+using AbbContentEditor.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -65,9 +66,10 @@ try
 
     IHostEnvironment env = builder.Environment;
     builder.Configuration
-        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
-
+    .SetBasePath(env.ContentRootPath)
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
 
     var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -146,13 +148,13 @@ try
 
     //builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
     builder.Services.AddAutoMapper(typeof(Program).Assembly);
-    builder.Services.AddTransient<IConfiguration>( sp =>
-    {
-        IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
-        // configurationBuilder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-        configurationBuilder.AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
-        return configurationBuilder.Build();
-    });
+    //builder.Services.AddTransient<IConfiguration>( sp =>
+    //{
+    //    IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+    //    // configurationBuilder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+    //    configurationBuilder.AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
+    //    return configurationBuilder.Build();
+    //});
 
     Console.WriteLine(DateTime.Now);
     builder.Services.AddScoped<AbbAppContext>().
@@ -165,11 +167,13 @@ try
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 
+    builder.Services.AddHttpClient<ITurnstileService, TurnstileService>();
+
     builder.Services.AddIdentity<AbbAppUser, AbbAppUserRole>(options =>
     {
-        options.User.RequireUniqueEmail = false;
-        options.SignIn.RequireConfirmedAccount = false; // for test only!
-        options.SignIn.RequireConfirmedEmail = false;
+        options.User.RequireUniqueEmail = true;
+        options.SignIn.RequireConfirmedAccount = true; // for test only!
+        options.SignIn.RequireConfirmedEmail = true;
         options.SignIn.RequireConfirmedPhoneNumber = false;
     })
     .AddRoles<AbbAppUserRole>()

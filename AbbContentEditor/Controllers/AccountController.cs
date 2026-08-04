@@ -1,7 +1,9 @@
 ﻿using AbbContentEditor.Data;
 using AbbContentEditor.Helpers;
 using AbbContentEditor.Models;
+using AbbContentEditor.Models.Account;
 using AbbContentEditor.Models.Enums;
+using AbbContentEditor.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -25,10 +27,17 @@ namespace AbbContentEditor.Controllers
         private readonly ITokenManager _tokenManager;
         private readonly AbbAppContext _abbAppContext;
         private readonly IMapper _mapper;
+        private readonly ITurnstileService _turnstileService;
 
-        public AccountController(IOptions<JWTSettings> optAccess, UserManager<AbbAppUser> userManager, 
-                                 SignInManager<AbbAppUser> signInManager, ILogger<AccountController> logger, 
-                                 ITokenManager tokenManager, AbbAppContext abbAppContext, IMapper mapper)
+        public AccountController(
+            IOptions<JWTSettings> optAccess,
+            UserManager<AbbAppUser> userManager,
+            SignInManager<AbbAppUser> signInManager,
+            ILogger<AccountController> logger,
+            ITokenManager tokenManager,
+            AbbAppContext abbAppContext,
+            IMapper mapper,
+            ITurnstileService turnstileService)
         {
             _userManager = userManager;
             _logger = logger;
@@ -37,6 +46,7 @@ namespace AbbContentEditor.Controllers
             _tokenManager = tokenManager;
             _abbAppContext = abbAppContext;
             _mapper = mapper;
+            _turnstileService = turnstileService;
         }
 
         [HttpPost]
@@ -44,8 +54,6 @@ namespace AbbContentEditor.Controllers
         [Route("RegisterUser")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestModel model)
         {
-            // ASP.NET Core [ApiController] handles ModelState.IsValid automatically,
-            // but explicit check kept here if standard Controllerbase is used:
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -59,7 +67,6 @@ namespace AbbContentEditor.Controllers
                     Email = model.Email
                 };
 
-                // Create user (UserManager handles password hashing internally)
                 var createResult = await _userManager.CreateAsync(user, model.Password);
                 if (!createResult.Succeeded)
                 {
@@ -74,11 +81,9 @@ namespace AbbContentEditor.Controllers
                     });
                 }
 
-                // Add user to role
                 var roleResult = await _userManager.AddToRoleAsync(user, UserRoles.Guest.ToString());
                 if (!roleResult.Succeeded)
                 {
-                    // Rollback user creation if role assignment fails
                     await _userManager.DeleteAsync(user);
 
                     var roleErrors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
@@ -92,8 +97,11 @@ namespace AbbContentEditor.Controllers
                     });
                 }
 
+                // Trigger Email Confirmation
+                await SendEmailRegistrationAsync(user, "https://alexey.beliaeff.ru");
+
                 _logger.LogInformation("User {Email} successfully registered.", model.Email);
-                return Ok(new { Message = "User registered successfully." });
+                return Ok(new { Message = "User registered successfully. Please check your email to confirm registration." });
             }
             catch (Exception ex)
             {
@@ -108,58 +116,145 @@ namespace AbbContentEditor.Controllers
             }
         }
 
-
-
-        [HttpPost]
+        /// <summary>
+        /// Validates email confirmation token sent via email link.
+        /// </summary>
+        [HttpGet]
         [AllowAnonymous]
         [Route("ConfirmEmail")]
-        public async Task<IActionResult> ConfirmEmail(string email)
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string code)
         {
-            var user = await _userManager.FindByEmailAsync(email);
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
+            {
+                return BadRequest("User Id and Code are required.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound($"Unable to load user with email '{email}'.");
+                return NotFound($"Unable to load user with ID '{userId}'.");
             }
-            SendEmailRegistration(user, "https://alexey.beliaeff.ru");
-            var userId = await _userManager.GetUserIdAsync(user);
-            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-            return Ok();
+
+            // Decode base64url encoded token
+            var decodedCodeBytes = WebEncoders.Base64UrlDecode(code);
+            var decodedCode = Encoding.UTF8.GetString(decodedCodeBytes);
+
+            var result = await _userManager.ConfirmEmailAsync(user, decodedCode);
+            if (!result.Succeeded)
+            {
+                return BadRequest("Error confirming your email.");
+            }
+
+            return Ok(new { Message = "Email confirmed successfully." });
         }
 
-        private async void SendEmailRegistration (AbbAppUser user, string? returnUrl)
+        /// <summary>
+        /// Endpoint matching front-end call to `/Account/Forgotten`. Verifies Cloudflare CAPTCHA and emails password reset token.
+        /// </summary>
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("Forgotten")]
+        public async Task<IActionResult> Forgotten([FromBody] ForgottenPasswordRequestModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // 1. Verify Cloudflare Turnstile token
+            var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+            bool isCaptchaValid = await _turnstileService.VerifyTokenAsync(model.TurnstileToken, clientIp);
+
+            if (!isCaptchaValid)
+            {
+                return BadRequest(new { Message = "CAPTCHA verification failed. Please try again." });
+            }
+
+            // 2. Locate user
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            // To prevent account enumeration attacks, always return OK even if user is not found
+            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+            {
+                return Ok(new { Message = "If an account with that email exists, reset instructions have been sent." });
+            }
+
+            // 3. Generate Password Reset Token
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            // 4. Construct Link (Points to React Frontend Reset Password Page)
+            var resetLink = $"https://alexey.beliaeff.ru/reset-password?email={Uri.EscapeDataString(user.Email)}&code={encodedToken}";
+
+            // TODO: Send `resetLink` using your preferred Email Service (SendGrid, SMTP, etc.)
+            _logger.LogInformation("Password reset link generated for {Email}: {ResetLink}", user.Email, resetLink);
+
+            return Ok(new { Message = "If an account with that email exists, reset instructions have been sent." });
+        }
+
+        /// <summary>
+        /// Endpoint to execute the actual password reset using the token.
+        /// </summary>
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("ResetPassword")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return BadRequest("Invalid password reset request.");
+            }
+
+            var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(model.Token));
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                return BadRequest(new { Message = errors });
+            }
+
+            return Ok(new { Message = "Password has been successfully reset." });
+        }
+
+        private async Task SendEmailRegistrationAsync(AbbAppUser user, string returnUrl)
         {
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedCode = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-            var EmailConfirmationUrl = Url.Page(
-                "/Account/ConfirmEmail",
-                pageHandler: null,
-                values: new { area = "Identity", userId = user.Id, code = code, returnUrl = returnUrl },
-                protocol: Request.Scheme);
+            var emailConfirmationUrl = $"{returnUrl}/confirm-email?userId={user.Id}&code={encodedCode}";
 
+            // TODO: Replace with real email service dispatch
+            _logger.LogInformation("Confirmation link generated for {Email}: {Url}", user.Email, emailConfirmationUrl);
         }
 
         [HttpPost]
         [Route("Login")]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(LoginRequestModel model)
+        public async Task<IActionResult> Login([FromBody] LoginRequestModel model)
         {
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, 
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password,
                     model.RememberMe, lockoutOnFailure: false);
-                _logger.LogInformation($"Login {model.Email}");
-                //var user = _abbAppContext.Users.Where(u => u.NormalizedUserName.Equals(model.Email.ToUpper())).FirstOrDefault();
-                //var user = _userManager.Users.FirstOrDefault(x=>x.Email.Equals(model.Email.ToUpper(), StringComparison.InvariantCultureIgnoreCase));
+
+                _logger.LogInformation("Login attempt for {Email}", model.Email);
+
                 var user = await _userManager.FindByNameAsync(model.Email);
                 if (user == null) return Unauthorized(new { message = "Access denied. Please provide valid credentials" });
 
                 IList<string> userRoles = await _userManager.GetRolesAsync(user);
                 if (result.Succeeded)
                 {
-                    // return your customize result 
                     var refreshToken = _tokenManager.GenerateRefreshToken();
                     var accessToken = _tokenManager.GenerateAccessToken(model.Email, userRoles);
+
                     AuthenticationResponse tokenApiModel = new AuthenticationResponse()
                     {
                         User = new UserDto()
@@ -171,80 +266,57 @@ namespace AbbContentEditor.Controllers
                         RefreshToken = refreshToken
                     };
 
-                    _abbAppContext.UserTokens.Add( new IdentityUserToken<string>
+                    _abbAppContext.UserTokens.Add(new IdentityUserToken<string>
                     {
                         LoginProvider = "abb",
                         Name = "PasswordResetToken",
-                        UserId = user.Id, 
+                        UserId = user.Id,
                         Value = refreshToken
                     });
 
-                    _abbAppContext.SaveChangesAsync();
+                    await _abbAppContext.SaveChangesAsync();
 
                     return Ok(tokenApiModel);
                 }
                 else
                 {
-                    //if (result.IsLockedOut)
-                    //{
-                    //    _logger.LogWarning("User account locked out.");
-                    //    return new OkObjectResult(new LoginResponseModel { Status = "Failed to login", Message = "Account locked out." });
-                    //}
-                    //if (result.IsNotAllowed)
-                    //{
-                    //    _logger.LogWarning("User not allowed to sign in.");
-                    //    return new OkObjectResult(new LoginResponseModel { Status = "Failed to login", Message = "Account not allowed to sign in." });
-                    //}
-                    //if (result.RequiresTwoFactor)
-                    //{
-                    //    _logger.LogWarning("Two-factor authentication required.");
-                    //    return new OkObjectResult(new LoginResponseModel { Status = "Failed to login", Message = "Two-factor authentication required." });
-                    //}
-                    return Unauthorized( new { message = "Access denied. Please provide valid credentials" });
-                    //return new OkObjectResult(new LoginResponseModel { Status = "Failed to login",  
-                        //Message = result.ToString() });
+                    return Unauthorized(new { message = "Access denied. Please provide valid credentials" });
                 }
             }
-            return Ok("Something strange");
-
+            return BadRequest(ModelState);
         }
 
         [HttpPost]
         [Route("refresh")]
-        public async Task<IActionResult> Refresh(AuthenticationResponse tokenApiModel)
+        public async Task<IActionResult> Refresh([FromBody] AuthenticationResponse tokenApiModel)
         {
             if (tokenApiModel is null)
                 return BadRequest("Invalid client request");
+
             string accessToken = tokenApiModel.AccessToken;
             string refreshToken = tokenApiModel.RefreshToken;
-            System.Security.Claims.ClaimsPrincipal principal = _tokenManager.GetPrincipalFromExpiredToken(accessToken);
-            var username = principal.Identity.Name; //this is mapped to the Name claim by default
-            //var user =  _abbAppContext.Users.SingleOrDefault(u => u.UserName == username);
+
+            var principal = _tokenManager.GetPrincipalFromExpiredToken(accessToken);
             var user = await _userManager.GetUserAsync(principal);
-            
+
+            if (user is null)
+                return BadRequest("Invalid client request");
+
             var roles = await _userManager.GetRolesAsync(user);
             var handler = new JwtSecurityTokenHandler();
             var jwtSecurityToken = handler.ReadJwtToken(accessToken);
-            
-
-            // if (user is null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
-            if (user is null )
-                return BadRequest("Invalid client request");
 
             var newAccessToken = _tokenManager.GenerateAccessToken(user.Email, roles);
             var newRefreshToken = _tokenManager.GenerateRefreshToken();
-            var rtoken = _abbAppContext.UserTokens.
-                    SingleOrDefault(u=>u.UserId.Equals(user.Id) && 
-                                    u.Value.Equals(refreshToken));
-            Console.WriteLine(jwtSecurityToken.ValidTo < DateTime.Now.AddDays(-3));
-            // если рефреш токен пользователя существует и валидный токен истек не более 3 дней назад
+
+            var rtoken = _abbAppContext.UserTokens
+                .SingleOrDefault(u => u.UserId.Equals(user.Id) && u.Value.Equals(refreshToken));
+
             if (rtoken != null && jwtSecurityToken.ValidTo > DateTime.Now.AddDays(-3))
             {
-                var newrefreshtoken = rtoken;
-                newrefreshtoken.Value = newRefreshToken;
-                if(rtoken != null ) _abbAppContext.UserTokens.Update(newrefreshtoken);
+                rtoken.Value = newRefreshToken;
+                _abbAppContext.UserTokens.Update(rtoken);
             }
-            
             else
             {
                 _abbAppContext.UserTokens.Add(new IdentityUserToken<string>
@@ -252,15 +324,11 @@ namespace AbbContentEditor.Controllers
                     LoginProvider = "abb",
                     Name = "PasswordResetToken",
                     UserId = user.Id,
-                    Value = refreshToken
+                    Value = newRefreshToken
                 });
             }
-            _abbAppContext.SaveChangesAsync();
 
-            //rtoken.Value = newRefreshToken;
-
-            /// TODO: write refresh tokens to a table, userId - refresh token
-            /// In front - read Token and refresh token
+            await _abbAppContext.SaveChangesAsync();
 
             return Ok(new AuthenticationResponse()
             {
@@ -268,20 +336,6 @@ namespace AbbContentEditor.Controllers
                 RefreshToken = newRefreshToken
             });
         }
-
-        //[AllowAnonymous]
-        //[HttpPost("register")]
-        //[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
-        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> Register([FromBody] RegisterRequest request)
-        //{
-        //    var response = await _authenticationService.Register(request);
-
-        //    return Ok(response);
-        //}
-
-
 
         [HttpGet("exit")]
         public string ExitToken()
@@ -295,15 +349,9 @@ namespace AbbContentEditor.Controllers
                 expires: DateTime.UtcNow.Add(TimeSpan.FromSeconds(1)),
                 notBefore: DateTime.UtcNow,
                 signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
-                );
+            );
 
             return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
-
-
-
-
-
-
     }
 }

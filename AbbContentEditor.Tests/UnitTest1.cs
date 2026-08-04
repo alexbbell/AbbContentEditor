@@ -2,6 +2,7 @@ using AbbContentEditor.Controllers;
 using AbbContentEditor.Data;
 using AbbContentEditor.Helpers;
 using AbbContentEditor.Models;
+using AbbContentEditor.Models.Account;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
