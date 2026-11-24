@@ -57,7 +57,7 @@ namespace AbbContentEditor.Tests
                 _logger.Object,
                 _tokenManager.Object,
                 _context.Object,
-                _mapper.Object
+                _mapper.Object, null
             );
 
         }

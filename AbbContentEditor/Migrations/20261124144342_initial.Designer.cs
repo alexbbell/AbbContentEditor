@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AbbContentEditor.Migrations
 {
     [DbContext(typeof(AbbAppContext))]
-    [Migration("20250924054748_initial")]
+    [Migration("20261124144342_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -21,7 +21,7 @@ namespace AbbContentEditor.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.12")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -46,11 +46,9 @@ namespace AbbContentEditor.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("LockoutEnabled")
@@ -211,7 +209,7 @@ namespace AbbContentEditor.Migrations
                             Preview = "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…",
                             TheText = "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.",
                             Title = "My first blog post from dbcontext migration",
-                            UpdDate = new DateTime(2025, 9, 24, 5, 47, 43, 884, DateTimeKind.Utc).AddTicks(4056)
+                            UpdDate = new DateTime(2026, 11, 24, 14, 43, 40, 896, DateTimeKind.Utc).AddTicks(3647)
                         });
                 });
 

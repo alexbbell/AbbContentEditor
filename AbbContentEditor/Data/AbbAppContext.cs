@@ -14,6 +14,7 @@ namespace AbbContentEditor.Data
         public virtual DbSet<Countdown> Countdowns { get; set; }
         public virtual DbSet<WordCollection> WordCollections { get; set; }
         public virtual DbSet<WordHistory> WordHistories { get; set; }
+        public virtual DbSet<ExerciseSession> ExerciseSessions { get; set; }
         public virtual DbSet<SiteRequest> SiteRequests { get; set; }
 
         public AbbAppContext(DbContextOptions<AbbAppContext> options) : base(options) { }
@@ -27,6 +28,19 @@ namespace AbbContentEditor.Data
             {
                 entity.Property(e => e.WordsCollection)
                       .HasColumnType("jsonb");
+            });
+
+            modelBuilder.Entity<ExerciseSession>(entity =>
+            {
+                entity.HasOne(e => e.IdentityUser)
+                      .WithMany()
+                      .HasForeignKey(e => e.IdentityUserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasMany(e => e.Answers)
+                      .WithOne(a => a.ExerciseSession)
+                      .HasForeignKey(a => a.ExerciseSessionId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(e => new { e.IdentityUserId, e.StartedAt });
             });
 
             // Override default AspNet Identity table names

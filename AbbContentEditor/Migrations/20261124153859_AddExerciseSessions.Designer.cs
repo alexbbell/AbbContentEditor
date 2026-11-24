@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AbbContentEditor.Migrations
 {
     [DbContext(typeof(AbbAppContext))]
-    [Migration("20260802091730_InitialStaticModel")]
-    partial class InitialStaticModel
+    [Migration("20261124153859_AddExerciseSessions")]
+    partial class AddExerciseSessions
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -209,7 +209,7 @@ namespace AbbContentEditor.Migrations
                             Preview = "Vitafit Digital Personal Scales for People, Weighing Professional since 2001, Body Scales with Clear LED Display and Step-On, 180 kg, Batteries Included, Silver Black…",
                             TheText = "HIGH PRECISION GUARANTEE With more than 20 years experience in the scale industry, we have developed the scale with the best technology and expertise, guaranteeing high accuracy of 0.1lb/0.05kg throughout the life of the scale.\r\nEasy to use: the scale people uses up-to-date digital technology, along with many friendly functions, including: auto calibration, auto step up, auto power off, convenient large platform in 280 x 280 mm, 3 x AAA batteries included, 3 unit switch: lb/kg/st, and high precision in full weighing range.",
                             Title = "My first blog post from dbcontext migration",
-                            UpdDate = new DateTime(2026, 8, 2, 9, 17, 29, 785, DateTimeKind.Utc).AddTicks(4943)
+                            UpdDate = new DateTime(2026, 11, 24, 15, 38, 55, 10, DateTimeKind.Utc).AddTicks(9340)
                         });
                 });
 
@@ -304,6 +304,34 @@ namespace AbbContentEditor.Migrations
                     b.ToTable("SiteRequests");
                 });
 
+            modelBuilder.Entity("AbbContentEditor.Models.Words.ExerciseSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IdentityUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("WordCollectionId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdentityUserId", "StartedAt");
+
+                    b.ToTable("ExerciseSessions");
+                });
+
             modelBuilder.Entity("AbbContentEditor.Models.Words.WordCollection", b =>
                 {
                     b.Property<int>("Id")
@@ -350,15 +378,29 @@ namespace AbbContentEditor.Migrations
                     b.Property<bool>("Correct")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("CorrectAnswer")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ExerciseSessionId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("IdentityUserId")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SelectedAnswer")
                         .HasColumnType("text");
 
                     b.Property<string>("Word")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("WordId")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ExerciseSessionId");
 
                     b.HasIndex("IdentityUserId");
 
@@ -480,6 +522,17 @@ namespace AbbContentEditor.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("AbbContentEditor.Models.Words.ExerciseSession", b =>
+                {
+                    b.HasOne("AbbContentEditor.Models.AbbAppUser", "IdentityUser")
+                        .WithMany()
+                        .HasForeignKey("IdentityUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("IdentityUser");
+                });
+
             modelBuilder.Entity("AbbContentEditor.Models.Words.WordCollection", b =>
                 {
                     b.HasOne("AbbContentEditor.Models.AbbAppUser", "Author")
@@ -493,11 +546,18 @@ namespace AbbContentEditor.Migrations
 
             modelBuilder.Entity("AbbContentEditor.Models.Words.WordHistory", b =>
                 {
+                    b.HasOne("AbbContentEditor.Models.Words.ExerciseSession", "ExerciseSession")
+                        .WithMany("Answers")
+                        .HasForeignKey("ExerciseSessionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("AbbContentEditor.Models.AbbAppUser", "IdentityUser")
                         .WithMany()
                         .HasForeignKey("IdentityUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ExerciseSession");
 
                     b.Navigation("IdentityUser");
                 });
@@ -551,6 +611,11 @@ namespace AbbContentEditor.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("AbbContentEditor.Models.Words.ExerciseSession", b =>
+                {
+                    b.Navigation("Answers");
                 });
 #pragma warning restore 612, 618
         }

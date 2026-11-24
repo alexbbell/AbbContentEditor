@@ -8,6 +8,7 @@ namespace AbbContentEditor.Data.UoW
     {
         Repository<Category> categoryRepository { get; set; }
         Repository<WordHistory> wordHistoryRepository { get; set; }
+        Repository<ExerciseSession> exerciseSessionRepository { get; set; }
         Repository<BankOperation> bankOperationRepository { get; set; }
         Repository<WordCollection> wordCollectionRepository { get; set; }
         Repository<SiteRequest> siteRequestsRepository { get; set; }

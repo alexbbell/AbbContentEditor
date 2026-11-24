@@ -14,6 +14,9 @@ namespace AbbContentEditor
             CreateMap<WordHistory, WordHistoryDto>(); //.ForMember(dest => dest.UserId, act => act.MapFrom(src=> src.IdentityUser.Id));
             CreateMap<WordHistoryDto, WordHistory>().ForMember(dest => dest.IdentityUser, opt => opt.Ignore());
             CreateMap<AbbAppUser, UserDto>();
+            CreateMap<ExerciseSession, ExerciseSessionDto>()
+                .ForMember(dest => dest.CollectionId, opt => opt.MapFrom(src => src.WordCollectionId));
+            CreateMap<WordHistory, ExerciseAnswerDto>();
         }
     }
 }
