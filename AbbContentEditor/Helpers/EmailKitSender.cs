@@ -1,34 +1,61 @@
 ﻿using MailKit.Net.Smtp;
 using MailKit.Security;
+using Microsoft.Extensions.Options;
 using MimeKit;
 
 namespace AbbContentEditor.Helpers
 {
-    public class EmailKitSender
+    /// <summary>
+    /// SMTP configuration, bound from the "Smtp" section of appsettings.
+    /// </summary>
+    public class SmtpSettings
     {
-        public async Task SendEmailAsync(string recipientEmail, string text)
+        public string Host { get; set; } = "127.0.0.1";
+        public int Port { get; set; } = 25;
+        /// <summary>None | Auto | SslOnConnect | StartTls | StartTlsWhenAvailable</summary>
+        public SecureSocketOptions Security { get; set; } = SecureSocketOptions.None;
+        public string? Username { get; set; }
+        public string? Password { get; set; }
+        public string FromEmail { get; set; } = "alexey@beliaeff.ru";
+        public string FromName { get; set; } = "ABWords";
+    }
+
+    public interface IEmailService
+    {
+        Task SendEmailAsync(string recipientEmail, string subject, string htmlBody, CancellationToken cancellationToken = default);
+    }
+
+    public class EmailKitSender : IEmailService
+    {
+        private readonly SmtpSettings _settings;
+        private readonly ILogger<EmailKitSender> _logger;
+
+        public EmailKitSender(IOptions<SmtpSettings> settings, ILogger<EmailKitSender> logger)
+        {
+            _settings = settings.Value;
+            _logger = logger;
+        }
+
+        public async Task SendEmailAsync(string recipientEmail, string subject, string htmlBody, CancellationToken cancellationToken = default)
         {
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("Sender Name", "alexey@beliaeff.ru"));
-            message.To.Add(new MailboxAddress("Recipient Name", recipientEmail));
-            message.Subject = "Test Email from .NET";
+            message.From.Add(new MailboxAddress(_settings.FromName, _settings.FromEmail));
+            message.To.Add(MailboxAddress.Parse(recipientEmail));
+            message.Subject = subject;
+            message.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
 
-            message.Body = new TextPart("html")
-            {
-                Text = text
-            };
-            
             using var client = new SmtpClient();
+            await client.ConnectAsync(_settings.Host, _settings.Port, _settings.Security, cancellationToken);
 
-            // Option A: If connecting to a local MTA (Postfix/Sendmail on localhost)
-            await client.ConnectAsync("127.0.0.1", 25, SecureSocketOptions.None);
+            if (!string.IsNullOrEmpty(_settings.Username))
+            {
+                await client.AuthenticateAsync(_settings.Username, _settings.Password, cancellationToken);
+            }
 
-            // Option B: If connecting to an external SMTP server (e.g., port 587 with STARTTLS)
-            // await client.ConnectAsync("smtp.yourprovider.com", 587, SecureSocketOptions.StartTls);
-            // await client.AuthenticateAsync("smtp_username", "smtp_password");
+            await client.SendAsync(message, cancellationToken);
+            await client.DisconnectAsync(true, cancellationToken);
 
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+            _logger.LogInformation("Email '{Subject}' sent to {Email}", subject, recipientEmail);
         }
     }
 }

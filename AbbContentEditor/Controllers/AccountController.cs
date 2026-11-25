@@ -20,6 +20,10 @@ namespace AbbContentEditor.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
+        // Refresh token storage key in Abb_UserTokens. The name is historical; kept so existing rows still match.
+        private const string RefreshTokenProvider = "abb";
+        private const string RefreshTokenName = "PasswordResetToken";
+
         private readonly UserManager<AbbAppUser> _userManager;
         private readonly SignInManager<AbbAppUser> _signInManager;
         private readonly ILogger<AccountController> _logger;
@@ -28,6 +32,8 @@ namespace AbbContentEditor.Controllers
         private readonly AbbAppContext _abbAppContext;
         private readonly IMapper _mapper;
         private readonly ITurnstileService _turnstileService;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
         public AccountController(
             IOptions<JWTSettings> optAccess,
@@ -37,7 +43,9 @@ namespace AbbContentEditor.Controllers
             ITokenManager tokenManager,
             AbbAppContext abbAppContext,
             IMapper mapper,
-            ITurnstileService turnstileService)
+            ITurnstileService turnstileService,
+            IEmailService emailService,
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _logger = logger;
@@ -47,6 +55,8 @@ namespace AbbContentEditor.Controllers
             _abbAppContext = abbAppContext;
             _mapper = mapper;
             _turnstileService = turnstileService;
+            _emailService = emailService;
+            _configuration = configuration;
         }
 
         [HttpPost]
@@ -98,7 +108,24 @@ namespace AbbContentEditor.Controllers
                 }
 
                 // Trigger Email Confirmation
-                await SendEmailRegistrationAsync(user, "https://alexey.beliaeff.ru");
+                try
+                {
+                    var frontendBaseUrl = _configuration["FrontendBaseUrl"] ?? "https://alexey.beliaeff.ru";
+                    await SendEmailRegistrationAsync(user, frontendBaseUrl);
+                }
+                catch (Exception emailEx)
+                {
+                    // Roll back so the user can register again with the same email once mail delivery works
+                    _logger.LogError(emailEx, "Failed to send confirmation email to {Email}. Rolling back registration.", model.Email);
+                    await _userManager.DeleteAsync(user);
+
+                    return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                    {
+                        Status = StatusCodes.Status500InternalServerError,
+                        Title = "Registration Failed",
+                        Detail = "Could not send the confirmation email. Please try again later."
+                    });
+                }
 
                 _logger.LogInformation("User {Email} successfully registered.", model.Email);
                 return Ok(new { Message = "User registered successfully. Please check your email to confirm registration." });
@@ -124,25 +151,41 @@ namespace AbbContentEditor.Controllers
         [Route("ConfirmEmail")]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string code)
         {
+            const string invalidLinkMessage = "This confirmation link is invalid or has expired.";
+
             if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
             {
-                return BadRequest("User Id and Code are required.");
+                return BadRequest(new { Message = invalidLinkMessage });
             }
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID '{userId}'.");
+                return BadRequest(new { Message = invalidLinkMessage });
+            }
+
+            if (await _userManager.IsEmailConfirmedAsync(user))
+            {
+                return Ok(new { Message = "Your email is already confirmed." });
             }
 
             // Decode base64url encoded token
-            var decodedCodeBytes = WebEncoders.Base64UrlDecode(code);
-            var decodedCode = Encoding.UTF8.GetString(decodedCodeBytes);
+            string decodedCode;
+            try
+            {
+                decodedCode = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+            }
+            catch (FormatException)
+            {
+                return BadRequest(new { Message = invalidLinkMessage });
+            }
 
             var result = await _userManager.ConfirmEmailAsync(user, decodedCode);
             if (!result.Succeeded)
             {
-                return BadRequest("Error confirming your email.");
+                _logger.LogWarning("Email confirmation failed for {Email}: {Errors}",
+                    user.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
+                return BadRequest(new { Message = invalidLinkMessage });
             }
 
             return Ok(new { Message = "Email confirmed successfully." });
@@ -184,10 +227,27 @@ namespace AbbContentEditor.Controllers
             var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
             // 4. Construct Link (Points to React Frontend Reset Password Page)
-            var resetLink = $"https://alexey.beliaeff.ru/reset-password?email={Uri.EscapeDataString(user.Email)}&code={encodedToken}";
+            var frontendBaseUrl = (_configuration["FrontendBaseUrl"] ?? "https://alexey.beliaeff.ru").TrimEnd('/');
+            var resetLink = $"{frontendBaseUrl}/reset-password?email={Uri.EscapeDataString(user.Email!)}&code={encodedToken}";
 
-            // TODO: Send `resetLink` using your preferred Email Service (SendGrid, SMTP, etc.)
-            _logger.LogInformation("Password reset link generated for {Email}: {ResetLink}", user.Email, resetLink);
+            // 5. Send email. Failures are logged but not reported to the client to avoid account enumeration.
+            try
+            {
+                var safeUrl = System.Net.WebUtility.HtmlEncode(resetLink);
+                var body = BuildEmailBody(
+                    "Reset your password",
+                    "We received a request to reset the password for your ABWords account. Click the button below to choose a new password.",
+                    "Reset password",
+                    safeUrl,
+                    "If you didn't request a password reset, you can ignore this email. Your password won't change.");
+
+                await _emailService.SendEmailAsync(user.Email!, "Reset your ABWords password", body);
+                _logger.LogInformation("Password reset email sent to {Email}", user.Email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send password reset email to {Email}", user.Email);
+            }
 
             return Ok(new { Message = "If an account with that email exists, reset instructions have been sent." });
         }
@@ -208,10 +268,19 @@ namespace AbbContentEditor.Controllers
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
-                return BadRequest("Invalid password reset request.");
+                return BadRequest(new { Message = "Invalid password reset request." });
             }
 
-            var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(model.Token));
+            string decodedToken;
+            try
+            {
+                decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(model.Token));
+            }
+            catch (FormatException)
+            {
+                return BadRequest(new { Message = "This reset link is invalid or has expired." });
+            }
+
             var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
 
             if (!result.Succeeded)
@@ -228,11 +297,33 @@ namespace AbbContentEditor.Controllers
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedCode = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-            var emailConfirmationUrl = $"{returnUrl}/confirm-email?userId={user.Id}&code={encodedCode}";
+            var emailConfirmationUrl =
+                $"{returnUrl.TrimEnd('/')}/confirm-email?userId={Uri.EscapeDataString(user.Id)}&code={encodedCode}";
 
-            // TODO: Replace with real email service dispatch
-            _logger.LogInformation("Confirmation link generated for {Email}: {Url}", user.Email, emailConfirmationUrl);
+            var safeUrl = System.Net.WebUtility.HtmlEncode(emailConfirmationUrl);
+            var body = BuildEmailBody(
+                "Welcome to ABWords!",
+                "Thanks for signing up. Please confirm your email address to activate your account.",
+                "Confirm email",
+                safeUrl,
+                "This link expires in 4 hours. If you didn't create an account, you can ignore this email.");
+
+            await _emailService.SendEmailAsync(user.Email!, "Confirm your ABWords account", body);
+            _logger.LogInformation("Confirmation email sent to {Email}", user.Email);
         }
+
+        /// <summary>Builds a simple HTML email with a call-to-action button. <paramref name="safeUrl"/> must already be HTML-encoded.</summary>
+        private static string BuildEmailBody(string heading, string intro, string buttonText, string safeUrl, string footer) => $@"
+<div style=""font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#222;max-width:560px"">
+  <h2 style=""margin:0 0 16px"">{heading}</h2>
+  <p>{intro}</p>
+  <p style=""margin:24px 0"">
+    <a href=""{safeUrl}"" style=""background:#2563eb;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block"">{buttonText}</a>
+  </p>
+  <p>If the button doesn't work, copy and paste this link into your browser:</p>
+  <p style=""word-break:break-all""><a href=""{safeUrl}"">{safeUrl}</a></p>
+  <p style=""color:#666;font-size:13px"">{footer}</p>
+</div>";
 
         [HttpPost]
         [Route("Login")]
@@ -266,15 +357,8 @@ namespace AbbContentEditor.Controllers
                         RefreshToken = refreshToken
                     };
 
-                    _abbAppContext.UserTokens.Add(new IdentityUserToken<string>
-                    {
-                        LoginProvider = "abb",
-                        Name = "PasswordResetToken",
-                        UserId = user.Id,
-                        Value = refreshToken
-                    });
-
-                    await _abbAppContext.SaveChangesAsync();
+                    // Upsert: one refresh token row per user (PK = UserId + LoginProvider + Name)
+                    await _userManager.SetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenName, refreshToken);
 
                     return Ok(tokenApiModel);
                 }
@@ -309,26 +393,8 @@ namespace AbbContentEditor.Controllers
             var newAccessToken = _tokenManager.GenerateAccessToken(user.Email, roles);
             var newRefreshToken = _tokenManager.GenerateRefreshToken();
 
-            var rtoken = _abbAppContext.UserTokens
-                .SingleOrDefault(u => u.UserId.Equals(user.Id) && u.Value.Equals(refreshToken));
-
-            if (rtoken != null && jwtSecurityToken.ValidTo > DateTime.Now.AddDays(-3))
-            {
-                rtoken.Value = newRefreshToken;
-                _abbAppContext.UserTokens.Update(rtoken);
-            }
-            else
-            {
-                _abbAppContext.UserTokens.Add(new IdentityUserToken<string>
-                {
-                    LoginProvider = "abb",
-                    Name = "PasswordResetToken",
-                    UserId = user.Id,
-                    Value = newRefreshToken
-                });
-            }
-
-            await _abbAppContext.SaveChangesAsync();
+            // Upsert: one refresh token row per user (PK = UserId + LoginProvider + Name)
+            await _userManager.SetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenName, newRefreshToken);
 
             return Ok(new AuthenticationResponse()
             {

@@ -169,6 +169,9 @@ try
 
     builder.Services.AddHttpClient<ITurnstileService, TurnstileService>();
 
+    builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
+    builder.Services.AddTransient<IEmailService, EmailKitSender>();
+
     builder.Services.AddIdentity<AbbAppUser, AbbAppUserRole>(options =>
     {
         options.User.RequireUniqueEmail = true;

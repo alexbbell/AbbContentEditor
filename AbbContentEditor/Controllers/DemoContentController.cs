@@ -62,8 +62,8 @@ namespace AbbContentEditor.Controllers
         [Route("sendMail")]
         public async Task<ActionResult> SendMail()
         {
-            EmailKitSender emailKitSender = new EmailKitSender();
-            await emailKitSender.SendEmailAsync("beliaeff@gmail.com", "This is a test email sent from the .NET application.");
+            var emailService = HttpContext.RequestServices.GetRequiredService<IEmailService>();
+            await emailService.SendEmailAsync("beliaeff@gmail.com", "Test Email from .NET", "This is a test email sent from the .NET application.");
             return Ok("Email sent successfully.");
         }
         private async Task<bool> PopulateWordHistory()
